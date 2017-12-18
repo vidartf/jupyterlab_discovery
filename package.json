@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@jupyterlab/application": "^0.13.1",
+    "@jupyterlab/apputils": "^0.13.1",
     "react-table": "^6.7.5"
   },
   "devDependencies": {
