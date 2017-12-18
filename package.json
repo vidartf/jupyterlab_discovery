@@ -1,0 +1,43 @@
+{
+  "name": "jupyterlab_discovery",
+  "version": "1.0.0",
+  "description": "A JupyterLab extension to facilitate the discovery and installation of other extensions",
+  "keywords": [
+    "extension",
+    "jupyter",
+    "jupyterlab"
+  ],
+  "homepage": "https://github.com/vidartf/jupyterlab_discovery",
+  "bugs": {
+    "url": "https://github.com/vidartf/jupyterlab_discovery/issues"
+  },
+  "license": "BSD-3-Clause",
+  "author": "Vidar Tonaas Fauske",
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vidartf/jupyterlab_discovery.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^0.13.1",
+    "react-table": "^6.7.5"
+  },
+  "devDependencies": {
+    "@types/react-table": "^6.7.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.6.2"
+  },
+  "jupyterlab": {
+    "extension": "src/plugin"
+  }
+}
