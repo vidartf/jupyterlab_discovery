@@ -37,6 +37,9 @@ class ListModel extends VDomModel {
     let entries: IEntry[] = [];
     for (let obj of res.objects) {
       let pkg = obj.package;
+      if (pkg.name === 'jupyterlab_discovery') {
+        continue;  // Let's not include ourself
+      }
       entries.push({
         name: pkg.name,
         pure: true,
