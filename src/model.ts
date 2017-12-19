@@ -16,6 +16,8 @@ interface IEntry {
   python_package: string | null;
   installed: boolean;
   enabled: boolean;
+  official: boolean;
+  status: 'ok' | 'warning' | 'error' | null;
 }
 
 
@@ -42,6 +44,8 @@ class ListModel extends VDomModel {
         python_package: null,
         installed: false,
         enabled: false,
+        official: pkg.scope === 'jupyterlab',
+        status: null,
       });
     }
     return entries;

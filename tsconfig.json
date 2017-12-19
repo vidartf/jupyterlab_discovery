@@ -12,7 +12,8 @@
     "types": [],
     "strictNullChecks": true,
     "jsx": "react",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true
   },
   "include": ["src/*"]
 }

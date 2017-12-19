@@ -26,19 +26,20 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "@jupyterlab/application": "^0.13.1",
     "@jupyterlab/apputils": "^0.13.1",
-    "react-table": "^6.7.5"
+    "react-paginate": "^5.0.0"
   },
   "devDependencies": {
-    "@types/react-table": "^6.7.0",
+    "@types/react-paginate": "^4.3.1",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2"
   },
   "jupyterlab": {
-    "extension": "src/plugin"
+    "extension": "lib/plugin"
   }
 }

@@ -14,6 +14,7 @@ interface ISearchResult {
   objects: {
     package: {
       name: string;
+      scope: string;
       version: string;
       description: string;
       keywords: string[];
@@ -45,7 +46,8 @@ class Searcher {
 
   searchExtension(query: string, page=0, pageination=20): Promise<ISearchResult> {
     const uri = new URL('/-/v1/search', this.repoUri);
-    let text = `keywords:jupyterlab+extension not:insecure ${query}`
+    // Note: Spaces are encoded to '+' signs!
+    let text = `not:insecure ${query} keywords:jupyterlab extension`
     uri.searchParams.append('text', text);
     uri.searchParams.append('size', pageination.toString());
     uri.searchParams.append('from', (pageination * page).toString());
