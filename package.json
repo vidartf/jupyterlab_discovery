@@ -25,9 +25,10 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:labextension": "rimraf lab-dist && mkdirp lab-dist && cd lab-dist && npm pack ..",
     "clean": "rimraf lib",
     "watch": "tsc -w",
-    "prepublish": "npm run build"
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@jupyterlab/application": "^0.13.1",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@types/react-paginate": "^4.3.1",
+    "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "typescript": "~2.6.2"
   },

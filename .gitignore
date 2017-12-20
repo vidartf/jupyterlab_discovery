@@ -3,3 +3,6 @@ lib/
 node_modules/
 *.egg-info/
 .ipynb_checkpoints
+dist
+lab-dist
+*.pyc
