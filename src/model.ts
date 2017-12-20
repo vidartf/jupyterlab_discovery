@@ -26,7 +26,6 @@ class ListModel extends VDomModel {
   constructor(entries?: IEntry[]) {
     super();
     this._entries = entries || [];
-    this.query
   }
 
   get entries(): IEntry[] {
@@ -91,10 +90,10 @@ class ListModel extends VDomModel {
       });
   }
 
-  private _query: string;
-  private _page: number;
-  private _pagination: number;
-  private _totalEntries: number;
+  private _query: string = '';
+  private _page: number = 0;
+  private _pagination: number = 20;
+  private _totalEntries: number = 0;
 
   protected _entries: IEntry[];
 

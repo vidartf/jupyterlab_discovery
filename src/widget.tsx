@@ -154,6 +154,8 @@ class ExtensionView extends VDomRenderer<ListModel> {
    * Render the list view using the virtual DOM.
    */
   protected render(): React.ReactElement<any>[] {
+    const model = this.model!;
+    let pages = Math.floor(model.totalEntries / model.pagination);
     return [
       <SearchBar
         key='searchbar'
@@ -162,8 +164,8 @@ class ExtensionView extends VDomRenderer<ListModel> {
       />,
       <ListView
         key='listview'
-        entries={this.model!.entries}
-        numPages={(this.model!.totalEntries || 0) / this.model!.pagination}
+        entries={model.entries}
+        numPages={pages}
         onPage={(value) => { this.onPage(value); }}
       />
     ];
