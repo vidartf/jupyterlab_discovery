@@ -33,13 +33,14 @@
   "dependencies": {
     "@jupyterlab/application": "^0.13.1",
     "@jupyterlab/apputils": "^0.13.1",
+    "@jupyterlab/services": "^0.52.0",
     "react-paginate": "^5.0.0"
   },
   "devDependencies": {
     "@types/react-paginate": "^4.3.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
-    "typescript": "~2.6.2"
+    "typescript": "2.6.1"
   },
   "jupyterlab": {
     "extension": "lib/plugin"

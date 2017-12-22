@@ -11,9 +11,14 @@
 .jp-discovery-list-view-wrapper {
     margin: 0;
     padding: 0;
+    padding-bottom: 5px;
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
+}
+
+.jp-discovery-view header {
+    padding: 5px;
+    padding-bottom: 0;
 }
 
 .jp-discovery-list-view {
@@ -57,3 +62,26 @@
     display: flex;
     justify-content: center;
 }
+
+.jp-discovery-entry .jp-discovery-install,
+.jp-discovery-entry.jp-discovery-entry-installed .jp-discovery-uninstall {
+    display: inline-block;
+}
+
+.jp-discovery-entry .jp-discovery-uninstall,
+.jp-discovery-entry.jp-discovery-entry-installed .jp-discovery-install {
+    display: none;
+}
+
+
+.jp-discovery-entry .jp-discovery-enable,
+.jp-discovery-entry .jp-discovery-disable,
+.jp-discovery-entry.jp-discovery-entry-installed.jp-discovery-entry-enabled .jp-discovery-enable {
+    display: none;
+}
+
+.jp-discovery-entry.jp-discovery-entry-installed .jp-discovery-enable,
+.jp-discovery-entry.jp-discovery-entry-installed.jp-discovery-entry-enabled .jp-discovery-disable {
+    display: inline-block;
+}
+

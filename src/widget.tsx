@@ -9,7 +9,7 @@ import {
 import * as ReactPaginate from 'react-paginate';
 
 import {
-  ListModel, IEntry
+  ListModel, IEntry, Action
 } from './model';
 
 
@@ -64,15 +64,10 @@ namespace SearchBar {
   }
 }
 
-
-
-function ListEntry(props: {entry: IEntry}): React.ReactElement<any> {
+function ListEntry(props: {entry: IEntry, performAction: (action: Action, entry: IEntry) => void}): React.ReactElement<any> {
   const {entry} = props;
   const flagClasses = [];
-  if (entry.official) {
-    flagClasses.push('jp-discovery-entry-official');
-  }
-  if (entry.pure) {
+  if (entry.python_package) {
     flagClasses.push('jp-discovery-entry-pure');
   }
   if (entry.installed) {
@@ -88,6 +83,30 @@ function ListEntry(props: {entry: IEntry}): React.ReactElement<any> {
     <li className={`jp-discovery-entry ${flagClasses.join(' ')}`}>
       <div className='jp-discovery-entry-name'>{entry.name}</div>
       <div className='jp-discovery-entry-description'>{entry.description}</div>
+      <button
+        className='jp-discovery-install'
+        onClick={() => props.performAction('install', entry)}
+      >
+        Install
+      </button>
+      <button
+        className='jp-discovery-uninstall'
+        onClick={() => props.performAction('uninstall', entry)}
+      >
+        Uninstall
+      </button>
+      <button
+        className='jp-discovery-enable'
+        onClick={() => props.performAction('enable', entry)}
+      >
+        Enable
+      </button>
+      <button
+        className='jp-discovery-disable'
+        onClick={() => props.performAction('disable', entry)}
+      >
+        Disable
+      </button>
     </li>
   );
 }
@@ -101,11 +120,11 @@ function ListView(props: ListView.IProperties): React.ReactElement<any> {
   const entryViews = [];
   for (let entry of props.entries) {
     entryViews.push(
-      <ListEntry entry={entry} key={entry.name}/>
+      <ListEntry entry={entry} key={entry.name} performAction={props.performAction}/>
     );
   }
   let pagination;
-  if (props.numPages > 0) {
+  if (props.numPages > 1) {
     pagination = (
       <div className='jp-discovery-pagination'>
         <ReactPaginate previousLabel={"<"}
@@ -135,9 +154,10 @@ export
 namespace ListView {
   export
   interface IProperties {
-    entries: IEntry[];
+    entries: ReadonlyArray<IEntry>;
     numPages: number;
     onPage: (page: number) => void;
+    performAction: (action: Action, entry: IEntry) => void;
   }
 }
 
@@ -155,20 +175,39 @@ class ExtensionView extends VDomRenderer<ListModel> {
    */
   protected render(): React.ReactElement<any>[] {
     const model = this.model!;
-    let pages = Math.floor(model.totalEntries / model.pagination);
-    return [
+    let pages = Math.ceil(model.totalEntries / model.pagination);
+    let elements = [
       <SearchBar
         key='searchbar'
         placeholder='SEARCH'
         onSearch={(value) => { this.onSearch(value); }}
       />,
-      <ListView
-        key='listview'
-        entries={model.entries}
-        numPages={pages}
-        onPage={(value) => { this.onPage(value); }}
-      />
     ];
+    if (model.installed.length) {
+      elements.push(
+        <header>Installed</header>,
+        <ListView
+          key='installed'
+          entries={model.installed}
+          numPages={1}
+          onPage={(value) => {}}
+          performAction={this.onAction.bind(this)}
+          />,
+      );
+    }
+    if (model.installable.length) {
+      elements.push(
+        <header>Available</header>,
+        <ListView
+          key='installable'
+          entries={model.installable}
+          numPages={pages}
+          onPage={(value) => { this.onPage(value); }}
+          performAction={this.onAction.bind(this)}
+        />,
+      );
+    }
+    return elements;
   }
 
   onSearch(value: string) {
@@ -177,5 +216,20 @@ class ExtensionView extends VDomRenderer<ListModel> {
 
   onPage(value: number) {
     this.model!.page = value;
+  }
+
+  onAction(action: Action, entry: IEntry) {
+    switch(action) {
+    case 'install':
+      return this.model!.install(entry);
+    case 'uninstall':
+      return this.model!.uninstall(entry);
+    case 'enable':
+      return this.model!.enable(entry);
+    case 'disable':
+      return this.model!.disable(entry);
+    default:
+      throw new Error(`Invalid action: ${action}`)
+    }
   }
 }
