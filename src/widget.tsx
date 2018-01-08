@@ -183,6 +183,12 @@ class ExtensionView extends VDomRenderer<ListModel> {
         onSearch={(value) => { this.onSearch(value); }}
       />,
     ];
+    if (!model.initialized) {
+      model.initialize();
+      elements.push(
+        <div className="jp-discovery-loader">Updating extensions list</div>
+      )
+    }
     if (model.installed.length) {
       elements.push(
         <header>Installed</header>,

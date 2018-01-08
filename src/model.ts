@@ -143,6 +143,13 @@ class ListModel extends VDomModel {
     });
   }
 
+  initialize() {
+    this.update().then(() => {
+      this.initialized = true;
+      this.stateChanged.emit(undefined);
+    });
+  }
+
   protected async update() {
     let search = this.searcher.searchExtension(this.query, this.page, this.pagination);
     let searchMapPromise = this.translateSearchResult(search);
@@ -229,6 +236,7 @@ class ListModel extends VDomModel {
 
   offline: boolean | undefined;
   errorMessage: string | undefined;
+  initialized: boolean = false;
 
   private _query: string = '';
   private _page: number = 0;
