@@ -12,7 +12,6 @@ from subprocess import check_output, CalledProcessError, TimeoutExpired, STDOUT
 import os
 
 from concurrent.futures import ThreadPoolExecutor
-import json
 from threading import Event
 
 from notebook.base.handlers import APIHandler
@@ -70,19 +69,23 @@ class ExtensionManager(object):
 
     @run_on_executor
     def install(self, extension):
-        return install_extension(extension, app_dir=self.app_dir, logger=self.log)
+        install_extension(extension, app_dir=self.app_dir, logger=self.log)
+        raise gen.Return(dict(status='ok',))
 
     @run_on_executor
     def uninstall(self, extension):
-        return uninstall_extension(extension, app_dir=self.app_dir, logger=self.log)
+        did_uninstall = uninstall_extension(extension, app_dir=self.app_dir, logger=self.log)
+        raise gen.Return(dict(status='ok' if did_uninstall else 'error',))
 
     @run_on_executor
     def enable(self, extension):
-        return enable_extension(extension, app_dir=self.app_dir, logger=self.log)
+        enable_extension(extension, app_dir=self.app_dir, logger=self.log)
+        raise gen.Return(dict(status='ok',))
 
     @run_on_executor
     def disable(self, extension):
-        return disable_extension(extension, app_dir=self.app_dir, logger=self.log)
+        disable_extension(extension, app_dir=self.app_dir, logger=self.log)
+        raise gen.Return(dict(status='ok',))
 
     def _get_pkg_info(self, name, data):
         info = _read_package(data['path'])
@@ -160,6 +163,8 @@ class ExtensionHandler(APIHandler):
                 yield self.manager.enable(name)
             elif cmd == 'disable':
                 yield self.manager.disable(name)
+        except gen.Return:
+            raise
         except Exception as e:
             raise web.HTTPError(500, str(e))
 

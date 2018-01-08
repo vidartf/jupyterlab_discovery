@@ -183,28 +183,36 @@ class ListModel extends VDomModel {
     if (entry.installed) {
       throw new Error(`Already installed: ${entry.name}`);
     }
-    this._performAction('install', entry);
+    this._performAction('install', entry).then((data) => {
+      this.update();
+    });
   }
 
   uninstall(entry: IEntry) {
     if (!entry.installed) {
       throw new Error(`Not installed, cannot uninstall: ${entry.name}`);
     }
-    this._performAction('uninstall', entry);
+    this._performAction('uninstall', entry).then((data) => {
+      this.update();
+    });;
   }
 
   enable(entry: IEntry) {
     if (entry.enabled) {
       throw new Error(`Already enabled: ${entry.name}`);
     }
-    this._performAction('enable', entry);
+    this._performAction('enable', entry).then((data) => {
+      this.update();
+    });;
   }
 
   disable(entry: IEntry) {
     if (!entry.enabled) {
       throw new Error(`Already disabled: ${entry.name}`);
     }
-    this._performAction('disable', entry);
+    this._performAction('disable', entry).then((data) => {
+      this.update();
+    });;
   }
 
   private _query: string = '';
