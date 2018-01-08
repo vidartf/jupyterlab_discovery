@@ -23,6 +23,10 @@ interface ISearchResult {
       publisher: IPerson;
       maintainers: IPerson[];
     };
+    flags: {
+      insecure: number;
+      unstable: boolean;
+    };
     score: {
       final: number;
       detail: {
@@ -76,7 +80,7 @@ class Searcher {
   searchExtension(query: string, page=0, pageination=250): Promise<ISearchResult> {
     const uri = new URL('/-/v1/search', this.repoUri);
     // Note: Spaces are encoded to '+' signs!
-    let text = `not:insecure ${query} keywords:jupyterlab extension`
+    let text = `${query} keywords:"jupyterlab extension"`
     uri.searchParams.append('text', text);
     uri.searchParams.append('size', pageination.toString());
     uri.searchParams.append('from', (pageination * page).toString());
