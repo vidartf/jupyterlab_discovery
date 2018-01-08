@@ -85,3 +85,7 @@
     display: inline-block;
 }
 
+
+.jp-discovery-error {
+    padding: 4px 12px;
+}

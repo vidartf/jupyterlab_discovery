@@ -206,6 +206,11 @@ class ExtensionView extends VDomRenderer<ListModel> {
           performAction={this.onAction.bind(this)}
         />,
       );
+    } else if (model.offline) {
+      elements.push(
+        <header>Available</header>,
+        <div className="jp-discovery-error">Error searching for extensions{model.errorMessage ?`: ${model.errorMessage}` : '.' }</div>,
+      );
     }
     return elements;
   }

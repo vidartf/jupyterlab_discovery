@@ -147,7 +147,15 @@ class ListModel extends VDomModel {
     let search = this.searcher.searchExtension(this.query, this.page, this.pagination);
     let searchMapPromise = this.translateSearchResult(search);
     let installedMap = await this.translateInstalled(this.fetchInstalled());
-    let searchMap = await searchMapPromise;
+    let searchMap;
+    try {
+      searchMap = await searchMapPromise;
+      this.offline = false;
+    } catch (reason) {
+      searchMap = {};
+      this.offline = true;
+      this.errorMessage = reason.toString();
+    }
     let installed: IEntry[] = [];
     for (let key of Object.keys(installedMap)) {
       installed.push(installedMap[key]);
@@ -161,7 +169,11 @@ class ListModel extends VDomModel {
       }
     }
     this._installable = installable;
-    this._totalEntries = (await search).total;
+    try {
+      this._totalEntries = (await search).total;
+    } catch (error) {
+      this._totalEntries = 0;
+    }
     this.stateChanged.emit(undefined);
   }
 
@@ -214,6 +226,9 @@ class ListModel extends VDomModel {
       this.update();
     });;
   }
+
+  offline: boolean | undefined;
+  errorMessage: string | undefined;
 
   private _query: string = '';
   private _page: number = 0;
