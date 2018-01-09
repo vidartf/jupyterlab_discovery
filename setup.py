@@ -36,6 +36,9 @@ cmdclass = create_cmdclass(
     data_files_spec=[
         ('share/jupyter/lab/extensions',
          'lab-dist', '*.tgz'),
+        ('etc/jupyter/jupyter_notebook_config.d',
+         'jupyter-config/jupyter_notebook_config.d',
+         'jupyterlab-discovery.json'),
     ],
 )
 cmdclass['js'] = combine_commands(

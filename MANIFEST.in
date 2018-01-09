@@ -9,3 +9,4 @@ include .npmignore
 
 graft src
 graft style
+graft jupyter-config
