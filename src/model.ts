@@ -8,6 +8,8 @@ import {
   VDomModel
 } from '@jupyterlab/apputils';
 
+import * as semver from 'semver';
+
 import {
   Searcher, ISearchResult
 } from './query';
@@ -50,6 +52,13 @@ class ListModel extends VDomModel {
     this._installed = [];
     this._installable = [];
     this.settings = ServerConnection.makeSettings({withCredentials: true});
+  }
+
+  static entryHasUpdate(entry: IEntry): boolean {
+    if (!entry.installed || !entry.latest_version) {
+      return false;
+    }
+    return semver.lt(entry.installed_version, entry.latest_version);
   }
 
   get installed(): ReadonlyArray<IEntry> {

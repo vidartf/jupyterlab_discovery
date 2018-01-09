@@ -64,10 +64,12 @@
 }
 
 .jp-discovery-entry .jp-discovery-install,
+.jp-discovery-entry .jp-discovery-entry-update .jp-discovery-update,
 .jp-discovery-entry.jp-discovery-entry-installed .jp-discovery-uninstall {
     display: inline-block;
 }
 
+.jp-discovery-entry .jp-discovery-update,
 .jp-discovery-entry .jp-discovery-uninstall,
 .jp-discovery-entry.jp-discovery-entry-installed .jp-discovery-install {
     display: none;

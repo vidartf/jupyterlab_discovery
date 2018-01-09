@@ -76,6 +76,9 @@ function ListEntry(props: {entry: IEntry, performAction: (action: Action, entry:
   if (entry.enabled) {
     flagClasses.push('jp-discovery-entry-enabled');
   }
+  if (ListModel.entryHasUpdate(entry)) {
+    flagClasses.push('jp-discovery-entry-update');
+  }
   if (entry.status && ['ok', 'warning', 'error'].indexOf(entry.status) !== -1) {
     flagClasses.push(`jp-discovery-entry-${entry.status}`);
   }
@@ -88,6 +91,13 @@ function ListEntry(props: {entry: IEntry, performAction: (action: Action, entry:
         onClick={() => props.performAction('install', entry)}
       >
         Install
+      </button>
+      <button
+        className='jp-discovery-update'
+        // An install action will update the extension:
+        onClick={() => props.performAction('install', entry)}
+      >
+        Update
       </button>
       <button
         className='jp-discovery-uninstall'
