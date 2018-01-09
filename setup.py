@@ -73,6 +73,7 @@ setup_args = dict(
     },
     author          = 'Vidar Tonaas Fauske',
     author_email    = 'vidartf@gmail.com',
+    url             = 'http://github.com/vidartf/jupyterlab_discovery',
     license         = 'BSD',
     platforms       = "Linux, Mac OS X, Windows",
     keywords        = ['Interactive', 'Interpreter', 'Shell', 'Web'],
