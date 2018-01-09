@@ -193,7 +193,7 @@ class ListModel extends VDomModel {
     this.stateChanged.emit(undefined);
   }
 
-  _performAction(action: string, entry: IEntry) {
+  protected _performAction(action: string, entry: IEntry) {
     let request: ServerConnection.IRequest = {
       url: EXTENSION_API_PATH,
       method: 'POST',
