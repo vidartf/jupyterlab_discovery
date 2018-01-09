@@ -16,6 +16,7 @@ from threading import Event
 
 from notebook.base.handlers import APIHandler
 from tornado import gen, web
+from tornado.ioloop import IOLoop
 from tornado.concurrent import run_on_executor
 
 from jupyterlab.jlpmapp import YARN_PATH, HERE as jlab_dir
@@ -43,16 +44,17 @@ class ExtensionManager(object):
     def __init__(self, log, app_dir):
         self.log = log
         self.app_dir = app_dir
-        self._outdated = {}
-        self._load_outdated()
+        self._outdated = None
+        # Start fetching data on outdated extensions immediately
+        IOLoop.current().spawn_callback(self._get_outdated)
 
-    @run_on_executor
+    @gen.coroutine
     def list_extensions(self):
         info = get_app_info(app_dir=self.app_dir, logger=self.log)
         extensions = []
         for name, data in info['extensions'].items():
             status = 'ok'
-            pkg_info = self._get_pkg_info(name, data)
+            pkg_info = yield self._get_pkg_info(name, data)
             # TODO: Make sure JLab always gives compat_errors in info:
             #if name in info['compat_errors']:
             #    status = 'error'
@@ -65,7 +67,7 @@ class ExtensionManager(object):
                 installed_version=data['version'],
                 status=status,
             ))
-        return extensions
+        raise gen.Return(extensions)
 
     @run_on_executor
     def install(self, extension):
@@ -87,22 +89,30 @@ class ExtensionManager(object):
         disable_extension(extension, app_dir=self.app_dir, logger=self.log)
         raise gen.Return(dict(status='ok',))
 
+    @gen.coroutine
     def _get_pkg_info(self, name, data):
         info = _read_package(data['path'])
-        if not self._outdated:
-            self._load_outdated()
-        if name in self._outdated:
-            info['wanted_version'] = self._outdated[name]['wanted_version']
-            info['latest_version'] = self._outdated[name]['latest_version']
+        outdated = yield self._get_outdated()
+        if name in outdated:
+            info['wanted_version'] = outdated[name]['wanted_version']
+            info['latest_version'] = outdated[name]['latest_version']
         else:
             info['wanted_version'] = info['version']
             info['latest_version'] = info['version']
 
-        return info
+        raise gen.Return(info)
 
+    def _get_outdated(self):
+        # Ensure self._outdated is a Future for data on outdated extensions
+        if self._outdated is None:
+            self._outdated = self._load_outdated()
+        # Return the Future
+        return self._outdated
+
+
+    @run_on_executor
     def _load_outdated(self):
         cache = {}
-        self._outdated = cache
         try:
             # Note: We cannot use shell=True on Windows, as that will hang if
             # the command times out (which will happen when offline)
@@ -115,7 +125,7 @@ class ExtensionManager(object):
             output = e.output
         except TimeoutExpired as e:
             self.log.error('"yarn outdated" timed out, could not fetch extension status')
-            return
+            return None
         output = output.decode('utf-8')
         outdated_data = json.loads('[%s]' % ','.join(output.splitlines()))
         for de in outdated_data:
@@ -128,6 +138,7 @@ class ExtensionManager(object):
                             'wanted_version': entry[2],
                             'latest_version': entry[3],
                         }
+        return cache
 
 
 class ExtensionHandler(APIHandler):
