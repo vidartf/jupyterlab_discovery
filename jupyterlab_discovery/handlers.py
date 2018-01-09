@@ -101,16 +101,16 @@ class ExtensionManager(object):
         return info
 
     def _load_outdated(self):
-        shell = os.name == 'nt'
         cache = {}
         self._outdated = cache
         try:
+            # Note: We cannot use shell=True on Windows, as that will hang if
+            # the command times out (which will happen when offline)
             output = check_output(['node', YARN_PATH, 'outdated', '--json'],
-                                cwd=os.path.join(jlab_dir, 'staging'),
-                                shell=shell,
-                                stderr=STDOUT,
-                                timeout=10,
-                                )
+                                  cwd=os.path.join(jlab_dir, 'staging'),
+                                  stderr=STDOUT,
+                                  timeout=10,
+                                 )
         except CalledProcessError as e:
             output = e.output
         except TimeoutExpired as e:
