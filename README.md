@@ -10,7 +10,7 @@ A JupyterLab extension to facilitate the discovery and installation of other ext
 ## Installation
 
 ```bash
-pip install jupyterlab_discovery
+pip install jupyterlab-discovery
 ```
 
 For older versions of jupyter notebook, you will also need to run
