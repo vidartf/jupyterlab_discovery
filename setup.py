@@ -56,7 +56,7 @@ cmdclass['js'] = combine_commands(
 
 setup_args = dict(
     name            = name,
-    description     = "Diff and merge of Jupyter Notebooks",
+    description     = "A JupyterLab extension to facilitate the discovery and installation of other extensions",
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
@@ -71,9 +71,8 @@ setup_args = dict(
         'test': [
         ],
     },
-    author          = 'Jupyter Development Team',
-    author_email    = 'jupyter@googlegroups.com',
-    url             = 'http://jupyter.org',
+    author          = 'Vidar Tonaas Fauske',
+    author_email    = 'vidartf@gmail.com',
     license         = 'BSD',
     platforms       = "Linux, Mac OS X, Windows",
     keywords        = ['Interactive', 'Interpreter', 'Shell', 'Web'],

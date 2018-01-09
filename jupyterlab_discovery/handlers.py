@@ -1,6 +1,6 @@
 """Tornado handlers for extension management."""
 
-# Copyright (c) Jupyter Development Team.
+# Copyright (c) Simula Research.
 # Distributed under the terms of the Modified BSD License.
 
 try:

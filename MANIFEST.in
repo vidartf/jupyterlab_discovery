@@ -2,6 +2,7 @@
 include README.md
 include setupbase.py
 include MANIFEST.in
+include LICENSE.md
 include package.json
 include tsconfig.json
 include package-lock.json
