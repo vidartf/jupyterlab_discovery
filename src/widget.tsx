@@ -106,38 +106,42 @@ function ListEntry(props: ListEntry.IProperties): React.ReactElement<any> {
   return (
     <li className={`jp-discovery-entry ${flagClasses.join(' ')}`}>
       <div className='jp-discovery-entry-name'>{entry.name}</div>
-      <div className='jp-discovery-entry-description'>{entry.description}</div>
-      <button
-        className='jp-discovery-install'
-        onClick={() => props.performAction('install', entry)}
-      >
-        Install
-      </button>
-      <button
-        className='jp-discovery-update'
-        // An install action will update the extension:
-        onClick={() => props.performAction('install', entry)}
-      >
-        Update
-      </button>
-      <button
-        className='jp-discovery-uninstall'
-        onClick={() => props.performAction('uninstall', entry)}
-      >
-        Uninstall
-      </button>
-      <button
-        className='jp-discovery-enable'
-        onClick={() => props.performAction('enable', entry)}
-      >
-        Enable
-      </button>
-      <button
-        className='jp-discovery-disable'
-        onClick={() => props.performAction('disable', entry)}
-      >
-        Disable
-      </button>
+      <div className='jp-discovery-entry-content'>
+        <div className='jp-discovery-entry-description'>{entry.description}</div>
+        <div className='jp-discovery-entry-buttons'>
+          <button
+            className='jp-discovery-install'
+            onClick={() => props.performAction('install', entry)}
+          >
+            Install
+          </button>
+          <button
+            className='jp-discovery-update'
+            // An install action will update the extension:
+            onClick={() => props.performAction('install', entry)}
+          >
+            Update
+          </button>
+          <button
+            className='jp-discovery-uninstall'
+            onClick={() => props.performAction('uninstall', entry)}
+          >
+            Uninstall
+          </button>
+          <button
+            className='jp-discovery-enable'
+            onClick={() => props.performAction('enable', entry)}
+          >
+            Enable
+          </button>
+          <button
+            className='jp-discovery-disable'
+            onClick={() => props.performAction('disable', entry)}
+          >
+            Disable
+          </button>
+        </div>
+      </div>
     </li>
   );
 }

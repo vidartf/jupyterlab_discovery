@@ -149,3 +149,44 @@
 .jp-discovery-listview-message {
     font-size: var(--jp-ui-font-size1);
 }
+
+.jp-discovery-entry-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.jp-discovery-entry-buttons {
+    display: flex;
+    flex-direction: column;
+}
+
+.jp-discovery-entry button {
+    border: solid var(--jp-border-width) var(--jp-border-color2);
+    font-size: var(--jp-ui-font-size0);
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-right: 0px;
+    margin-left: 3px;
+    background-color: var(--jp-layout-color2)
+}
+
+.jp-discovery-entry button.jp-discovery-uninstall:hover {
+    background-color: var(--jp-error-color2);
+}
+
+.jp-discovery-entry button.jp-discovery-disable:hover {
+    background-color: var(--jp-error-color3);
+}
+
+.jp-discovery-entry button.jp-discovery-install:hover {
+    background-color: var(--jp-success-color2);
+}
+
+.jp-discovery-entry button.jp-discovery-enable:hover {
+    background-color: var(--jp-success-color3);
+}
+
+.jp-discovery-entry button.jp-discovery-update:hover {
+    background-color: var(--jp-success-color3);
+}
