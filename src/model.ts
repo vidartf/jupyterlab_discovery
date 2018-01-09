@@ -104,9 +104,6 @@ class ListModel extends VDomModel {
     let entries: {[key: string]: IEntry} = {};
     for (let obj of (await res).objects) {
       let pkg = obj.package;
-      if (pkg.name === 'jupyterlab_discovery') {
-        continue;  // Let's not include ourself
-      }
       entries[pkg.name] = {
         name: pkg.name,
         description: pkg.description,
@@ -130,9 +127,6 @@ class ListModel extends VDomModel {
     const promises = [];
     const entries: {[key: string]: IEntry} = {};
     for (let pkg of await res) {
-      if (pkg.name === 'jupyterlab_discovery') {
-        continue;  // Let's not include ourself
-      }
       promises.push(res.then((info) => {
         entries[pkg.name] = {
           name: pkg.name,
