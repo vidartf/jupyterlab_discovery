@@ -103,7 +103,7 @@ class ExtensionManager(object):
         """Get information about a package"""
         info = _read_package(data['path'])
         outdated = yield self._get_outdated()
-        if name in outdated:
+        if outdated and name in outdated:
             info['wanted_version'] = outdated[name]['wanted_version']
             info['latest_version'] = outdated[name]['latest_version']
         else:
@@ -114,7 +114,7 @@ class ExtensionManager(object):
 
     def _get_outdated(self):
         """Get a Future to information from `npm/yarn outdated`.
-        
+
         This will cache the results. To refresh the cache, set
         self._outdated to None before calling. To bypass the cache,
         call self._load_outdated directly.
@@ -186,22 +186,26 @@ class ExtensionHandler(APIHandler):
         # TODO: Can we trust extension_name? Does it need sanitation?
         #       It comes from an authenticated session, but its name is
         #       ultimately from the NPM repository.
+        ret_value = None
         try:
             if cmd == 'install':
-                yield self.manager.install(name)
+                ret_value = yield self.manager.install(name)
             elif cmd == 'uninstall':
-                yield self.manager.uninstall(name)
+                ret_value = yield self.manager.uninstall(name)
             elif cmd == 'enable':
-                yield self.manager.enable(name)
+                ret_value = yield self.manager.enable(name)
             elif cmd == 'disable':
-                yield self.manager.disable(name)
-        except gen.Return:
-            raise
+                ret_value = yield self.manager.disable(name)
+        except gen.Return as e:
+            ret_value = e.value
         except Exception as e:
             raise web.HTTPError(500, str(e))
 
-        self.set_status(200)
+        if ret_value is None:
+            self.set_status(200)
+        else:
+            self.finish(json.dumps(ret_value))
 
 
 # The path for lab extensions handler.
-extensions_handler_path = r"/lab/api/extensions"
+extensions_handler_path = r"/discovery/api/extensions"

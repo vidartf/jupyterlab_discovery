@@ -48,7 +48,7 @@ interface IInstalledEntry {
 /**
  * The server API path for querying/modifying installed extensions.
  */
-const EXTENSION_API_PATH = "lab/api/extensions"
+const EXTENSION_API_PATH = "discovery/api/extensions"
 
 /**
  * Extension actions that the server API accepts
@@ -66,7 +66,7 @@ class ListModel extends VDomModel {
     super();
     this._installed = [];
     this._searchResult = [];
-    this.serverConnectionSettings = ServerConnection.makeSettings({withCredentials: true});
+    this.serverConnectionSettings = ServerConnection.makeSettings();
   }
 
   /**
@@ -201,12 +201,11 @@ class ListModel extends VDomModel {
    * Make a request to the server for info about its installed extensions.
    */
   protected fetchInstalled(): Promise<IInstalledEntry[]> {
-    let request: ServerConnection.IRequest = {
-      url: EXTENSION_API_PATH,
-    };
-    return ServerConnection.makeRequest(request, this.serverConnectionSettings).then((response) => {
-      return response.data as IInstalledEntry[];
-    });
+    const url = new URL(EXTENSION_API_PATH, this.serverConnectionSettings.baseUrl);
+    return ServerConnection.makeRequest(
+      url.toString(), {}, this.serverConnectionSettings).then((response) => {
+        return response.json() as Promise<IInstalledEntry[]>;
+      });
   }
 
   /**
@@ -272,17 +271,17 @@ class ListModel extends VDomModel {
    * @param action A valid action to perform.
    * @param entry The extension to perform the action on.
    */
-  protected _performAction(action: string, entry: IEntry) {
-    let request: ServerConnection.IRequest = {
-      url: EXTENSION_API_PATH,
+  protected _performAction(action: string, entry: IEntry): Promise<IInstalledEntry[]> {
+    const url = new URL(EXTENSION_API_PATH, this.serverConnectionSettings.baseUrl);
+    let request: RequestInit = {
       method: 'POST',
-      data: JSON.stringify({
+      body: JSON.stringify({
         cmd: action,
         extension_name: entry.name,
       }),
     };
-    return ServerConnection.makeRequest(request, this.serverConnectionSettings).then((response) => {
-      return response.data as IInstalledEntry[];
+    return ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
+      return response.json() as Promise<IInstalledEntry[]>;
     });
   }
 

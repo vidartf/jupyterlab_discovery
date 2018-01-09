@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from notebook.utils import url_path_join
-
-from jupyterlab.commands import get_app_dir
-
-from .handlers import (
-    ExtensionHandler, ExtensionManager, extensions_handler_path,
-)
 
 
 def load_jupyter_server_extension(nbapp):
@@ -17,6 +10,14 @@ def load_jupyter_server_extension(nbapp):
     Args:
         nbapp (NotebookWebApplication): handle to the Notebook webserver instance.
     """
+    
+    from notebook.utils import url_path_join
+
+    from jupyterlab.commands import get_app_dir
+
+    from .handlers import (
+        ExtensionHandler, ExtensionManager, extensions_handler_path,
+    )
     web_app = nbapp.web_app
 
     app_dir = getattr(nbapp, 'app_dir', get_app_dir())
