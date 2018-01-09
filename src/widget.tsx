@@ -269,8 +269,7 @@ class ExtensionView extends VDomRenderer<ListModel> {
       content.push(
         <div  key='loading-placeholder' className="jp-discovery-loader">Updating extensions list</div>
       )
-    }
-    if (!model.query && model.installed.length) {
+    } else if (!model.query && model.installed.length) {
       content.push(
         <header key='installed-header'>Installed</header>,
         <ListView

@@ -216,6 +216,9 @@ class ListModel extends VDomModel {
     this.update().then(() => {
       this.initialized = true;
       this.stateChanged.emit(undefined);
+    }).catch(() => {
+      this.initialized = true;
+      this.stateChanged.emit(undefined);
     });
   }
 
