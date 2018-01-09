@@ -26,7 +26,9 @@ from jupyterlab.commands import (
 )
 
 
-def _make_extension_entry(name, description, enabled, core, latest_version, installed_version, status):
+def _make_extension_entry(name, description, enabled, core, latest_version,
+                          installed_version, status):
+    """Create an extension entry that can be sent to the client"""
     return dict(
         name=name,
         description=description,
@@ -50,6 +52,7 @@ class ExtensionManager(object):
 
     @gen.coroutine
     def list_extensions(self):
+        """Handle a request for all installed extensions"""
         info = get_app_info(app_dir=self.app_dir, logger=self.log)
         extensions = []
         for name, data in info['extensions'].items():
@@ -63,6 +66,8 @@ class ExtensionManager(object):
                 description=pkg_info['description'],
                 enabled=(name not in info['disabled']),
                 core=False,
+                # Use wanted version to ensure we limit ourselves
+                # within semver restrictions
                 latest_version=pkg_info['wanted_version'],
                 installed_version=data['version'],
                 status=status,
@@ -71,26 +76,31 @@ class ExtensionManager(object):
 
     @run_on_executor
     def install(self, extension):
+        """Handle an install/update request"""
         install_extension(extension, app_dir=self.app_dir, logger=self.log)
         raise gen.Return(dict(status='ok',))
 
     @run_on_executor
     def uninstall(self, extension):
+        """Handle an uninstall request"""
         did_uninstall = uninstall_extension(extension, app_dir=self.app_dir, logger=self.log)
         raise gen.Return(dict(status='ok' if did_uninstall else 'error',))
 
     @run_on_executor
     def enable(self, extension):
+        """Handle an enable request"""
         enable_extension(extension, app_dir=self.app_dir, logger=self.log)
         raise gen.Return(dict(status='ok',))
 
     @run_on_executor
     def disable(self, extension):
+        """Handle a disable request"""
         disable_extension(extension, app_dir=self.app_dir, logger=self.log)
         raise gen.Return(dict(status='ok',))
 
     @gen.coroutine
     def _get_pkg_info(self, name, data):
+        """Get information about a package"""
         info = _read_package(data['path'])
         outdated = yield self._get_outdated()
         if name in outdated:
@@ -103,6 +113,12 @@ class ExtensionManager(object):
         raise gen.Return(info)
 
     def _get_outdated(self):
+        """Get a Future to information from `npm/yarn outdated`.
+        
+        This will cache the results. To refresh the cache, set
+        self._outdated to None before calling. To bypass the cache,
+        call self._load_outdated directly.
+        """
         # Ensure self._outdated is a Future for data on outdated extensions
         if self._outdated is None:
             self._outdated = self._load_outdated()
@@ -112,6 +128,7 @@ class ExtensionManager(object):
 
     @run_on_executor
     def _load_outdated(self):
+        """Load information from `npm/yarn outdated`"""
         cache = {}
         try:
             # Note: We cannot use shell=True on Windows, as that will hang if
@@ -149,12 +166,14 @@ class ExtensionHandler(APIHandler):
     @web.authenticated
     @gen.coroutine
     def get(self):
+        """GET query returns info on all installed extensions"""
         extensions = yield self.manager.list_extensions()
         self.finish(json.dumps(extensions))
 
     @web.authenticated
     @gen.coroutine
     def post(self):
+        """POST query performs an action on a specific extension"""
         data = self.get_json_body()
         cmd = data['cmd']
         name = data['extension_name']
@@ -165,6 +184,8 @@ class ExtensionHandler(APIHandler):
                     cmd, name))
 
         # TODO: Can we trust extension_name? Does it need sanitation?
+        #       It comes from an authenticated session, but its name is
+        #       ultimately from the NPM repository.
         try:
             if cmd == 'install':
                 yield self.manager.install(name)

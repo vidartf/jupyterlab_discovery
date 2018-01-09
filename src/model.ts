@@ -14,6 +14,9 @@ import {
   Searcher, ISearchResult
 } from './query';
 
+/**
+ * Information about an extension
+ */
 export
 interface IEntry {
   name: string;
@@ -27,6 +30,9 @@ interface IEntry {
 }
 
 
+/**
+ * Information about an installed extension
+ */
 export
 interface IInstalledEntry {
   name: string;
@@ -39,21 +45,35 @@ interface IInstalledEntry {
 }
 
 
+/**
+ * The server API path for querying/modifying installed extensions.
+ */
 const EXTENSION_API_PATH = "lab/api/extensions"
 
+/**
+ * Extension actions that the server API accepts
+ */
 export
 type Action = 'install' | 'uninstall' | 'enable' | 'disable';
 
 
+/**
+ * Model for an extension list.
+ */
 export
 class ListModel extends VDomModel {
   constructor() {
     super();
     this._installed = [];
     this._searchResult = [];
-    this.settings = ServerConnection.makeSettings({withCredentials: true});
+    this.serverConnectionSettings = ServerConnection.makeSettings({withCredentials: true});
   }
 
+  /**
+   * Utility function to check whether an entry can be updated.
+   *
+   * @param entry The entry to check.
+   */
   static entryHasUpdate(entry: IEntry): boolean {
     if (!entry.installed || !entry.latest_version) {
       return false;
@@ -61,14 +81,25 @@ class ListModel extends VDomModel {
     return semver.lt(entry.installed_version, entry.latest_version);
   }
 
+  /**
+   * A readonly array of the installed extensions.
+   */
   get installed(): ReadonlyArray<IEntry> {
     return this._installed;
   }
 
+  /**
+   * A readonly array containing the latest search result
+   */
   get searchResult(): ReadonlyArray<IEntry> {
     return this._searchResult;
   }
 
+  /**
+   * Translate search results from an npm repository query into entries.
+   *
+   * @param res Promise to an npm query result.
+   */
   protected async translateSearchResult(res: Promise<ISearchResult>): Promise<{[key: string]: IEntry}> {
     let entries: {[key: string]: IEntry} = {};
     for (let obj of (await res).objects) {
@@ -90,6 +121,11 @@ class ListModel extends VDomModel {
     return entries;
   }
 
+  /**
+   * Translate installed extensions information from the server into entries.
+   *
+   * @param res Promise to the server reply data.
+   */
   protected async translateInstalled(res: Promise<IInstalledEntry[]>): Promise<{[key: string]: IEntry}> {
     const promises = [];
     const entries: {[key: string]: IEntry} = {};
@@ -115,6 +151,11 @@ class ListModel extends VDomModel {
     });
   }
 
+  /**
+   * The current NPM repository search query.
+   * 
+   * Setting its value triggers a new search.
+   */
   get query(): string {
     return this._query
   }
@@ -123,6 +164,14 @@ class ListModel extends VDomModel {
     this.update();
   }
 
+  /**
+   * The current NPM repository search page.
+   *
+   * The npm repository search is paginated by the `pagination` attribute.
+   * The `page` value selects which page is used.
+   *
+   * Setting its value triggers a new search.
+   */
   get page(): number {
     return this._page
   }
@@ -131,6 +180,14 @@ class ListModel extends VDomModel {
     this.update();
   }
 
+  /**
+   * The NPM repository search pagination.
+   *
+   * The npm repository search is paginated by the `pagination` attribute.
+   * The `page` value selects which page is used.
+   *
+   * Setting its value triggers a new search.
+   */
   get pagination(): number {
     return this._pagination
   }
@@ -139,19 +196,28 @@ class ListModel extends VDomModel {
     this.update();
   }
 
+  /**
+   * The total number of results in the current search.
+   */
   get totalEntries(): number {
     return this._totalEntries;
   }
 
+  /**
+   * Make a request to the server for info about its installed extensions.
+   */
   protected fetchInstalled(): Promise<IInstalledEntry[]> {
     let request: ServerConnection.IRequest = {
       url: EXTENSION_API_PATH,
     };
-    return ServerConnection.makeRequest(request, this.settings).then((response) => {
+    return ServerConnection.makeRequest(request, this.serverConnectionSettings).then((response) => {
       return response.data as IInstalledEntry[];
     });
   }
 
+  /**
+   * Initialize the model.
+   */
   initialize() {
     this.update().then(() => {
       this.initialized = true;
@@ -159,14 +225,22 @@ class ListModel extends VDomModel {
     });
   }
 
+  /**
+   * Update the current model.
+   *
+   * This will query the NPM repository, and the notebook server.
+   *
+   * Emits the `stateChanged` signal on succesfull completion.
+   */
   protected async update() {
-    let search = this.searcher.searchExtension(this.query, this.page, this.pagination);
+    let search = this.searcher.searchExtensions(this.query, this.page, this.pagination);
     let searchMapPromise = this.translateSearchResult(search);
     let installedMap = await this.translateInstalled(this.fetchInstalled());
     let searchMap;
     try {
       searchMap = await searchMapPromise;
       this.offline = false;
+      this.errorMessage = undefined;
     } catch (reason) {
       searchMap = {};
       this.offline = true;
@@ -195,6 +269,12 @@ class ListModel extends VDomModel {
     this.stateChanged.emit(undefined);
   }
 
+  /**
+   * Send a request to the server to perform an action on an extension.
+   *
+   * @param action A valid action to perform.
+   * @param entry The extension to perform the action on.
+   */
   protected _performAction(action: string, entry: IEntry) {
     let request: ServerConnection.IRequest = {
       url: EXTENSION_API_PATH,
@@ -204,11 +284,16 @@ class ListModel extends VDomModel {
         extension_name: entry.name,
       }),
     };
-    return ServerConnection.makeRequest(request, this.settings).then((response) => {
+    return ServerConnection.makeRequest(request, this.serverConnectionSettings).then((response) => {
       return response.data as IInstalledEntry[];
     });
   }
 
+  /**
+   * Install an extension.
+   *
+   * @param entry An entry indicating which extension to install.
+   */
   install(entry: IEntry) {
     if (entry.installed) {
       throw new Error(`Already installed: ${entry.name}`);
@@ -218,6 +303,11 @@ class ListModel extends VDomModel {
     });
   }
 
+  /**
+   * Uninstall an extension.
+   *
+   * @param entry An entry indicating which extension to uninstall.
+   */
   uninstall(entry: IEntry) {
     if (!entry.installed) {
       throw new Error(`Not installed, cannot uninstall: ${entry.name}`);
@@ -227,6 +317,11 @@ class ListModel extends VDomModel {
     });;
   }
 
+  /**
+   * Enable an extension.
+   *
+   * @param entry An entry indicating which extension to enable.
+   */
   enable(entry: IEntry) {
     if (entry.enabled) {
       throw new Error(`Already enabled: ${entry.name}`);
@@ -236,6 +331,11 @@ class ListModel extends VDomModel {
     });;
   }
 
+  /**
+   * Disable an extension.
+   *
+   * @param entry An entry indicating which extension to disable.
+   */
   disable(entry: IEntry) {
     if (!entry.enabled) {
       throw new Error(`Already disabled: ${entry.name}`);
@@ -245,8 +345,19 @@ class ListModel extends VDomModel {
     });;
   }
 
+  /**
+   * Set to true if an error occurs when trying to query the NPM repository.
+   */
   offline: boolean | undefined;
+
+  /**
+   * Contains an error message if an error occurred when updating the model.
+   */
   errorMessage: string | undefined;
+
+  /**
+   * Whether the model has finished async initialization.
+   */
   initialized: boolean = false;
 
   private _query: string = '';
@@ -256,7 +367,14 @@ class ListModel extends VDomModel {
 
   protected _installed: IEntry[];
   protected _searchResult: IEntry[];
-  protected settings: ServerConnection.ISettings;
 
+  /**
+   * Settings for connecting to the notebook server.
+   */
+  protected serverConnectionSettings: ServerConnection.ISettings;
+
+  /**
+   * A helper for performing searches of jupyterlab extensions on the NPM repository.
+   */
   protected searcher = new Searcher();
 }

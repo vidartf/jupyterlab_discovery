@@ -12,10 +12,13 @@ import '../style/index.css';
 
 
 /**
- * The discover view namespace token.
+ * The discover-view namespace token.
  */
-const namespace = 'discoverview';
+const namespaceToken = 'discoverview';
 
+/**
+ * IDs of the commands added by this extension.
+ */
 namespace CommandIDs {
   export
   const hideDiscover = 'discover:hide-main';
@@ -39,7 +42,7 @@ const extension: JupyterLabPlugin<void> = {
     const { commands, shell } = app;
     const view = new ExtensionView();
     view.id = 'discover.main-view';
-    restorer.add(view, namespace);
+    restorer.add(view, namespaceToken);
     view.title.label = 'Extensions';
     shell.addToLeftArea(view, { rank: 100 });
 
@@ -54,7 +57,6 @@ const extension: JupyterLabPlugin<void> = {
     addCommands(app, view);
   }
 };
-
 
 
 /**
@@ -86,8 +88,9 @@ function addCommands(app: JupyterLab, view: ExtensionView): void {
       }
     }
   });
-}
 
+  // TODO: Also add to command palette
+}
 
 
 export default extension;

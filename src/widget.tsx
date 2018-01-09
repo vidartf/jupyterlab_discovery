@@ -20,6 +20,9 @@ import {
 // TODO: Replace pagination with lazy loading of lower search results
 
 
+/**
+ * Search bar VDOM component.
+ */
 export
 class SearchBar extends React.Component<SearchBar.IProperties, SearchBar.IState> {
   constructor(props: SearchBar.IProperties) {
@@ -48,6 +51,9 @@ class SearchBar extends React.Component<SearchBar.IProperties, SearchBar.IState>
     );
   }
 
+  /**
+   * Handler for search input changes.
+   */
   handleChange(e: KeyboardEvent) {
     let target = e.target as HTMLInputElement;
     this.setState({
@@ -60,16 +66,26 @@ export
 namespace SearchBar {
   export
   interface IProperties {
+    /**
+     * The placeholder string to use in the search bar input field when empty.
+     */
     placeholder: string;
   }
 
   export
   interface IState {
+    /**
+     * The value of the search bar input field.
+     */
     value: string;
   }
 }
 
-function ListEntry(props: {entry: IEntry, performAction: (action: Action, entry: IEntry) => void}): React.ReactElement<any> {
+
+/**
+ * VDOM for visualizing an extension entry.
+ */
+function ListEntry(props: ListEntry.IProperties): React.ReactElement<any> {
   const {entry} = props;
   const flagClasses = [];
   if (entry.python_package) {
@@ -126,6 +142,22 @@ function ListEntry(props: {entry: IEntry, performAction: (action: Action, entry:
   );
 }
 
+export
+namespace ListEntry {
+  export
+  interface IProperties {
+    /**
+     * The entry to visualize.
+     */
+    entry: IEntry;
+
+    /**
+     * Callback to use for performing an action on the entry.
+     */
+    performAction: (action: Action, entry: IEntry) => void;
+  }
+}
+
 
 /**
  * List view widget for extensions
@@ -174,14 +206,32 @@ export
 namespace ListView {
   export
   interface IProperties {
+    /**
+     * The extension entries to display.
+     */
     entries: ReadonlyArray<IEntry>;
+
+    /**
+     * The number of pages that can be viewed via pagination.
+     */
     numPages: number;
+
+    /**
+     * The callback to use for changing the page
+     */
     onPage: (page: number) => void;
+
+    /**
+     * Callback to use for performing an action on an entry.
+     */
     performAction: (action: Action, entry: IEntry) => void;
   }
 }
 
 
+/**
+ * The main view for the discovery extension.
+ */
 export
 class ExtensionView extends VDomRenderer<ListModel> {
   constructor() {
@@ -198,7 +248,7 @@ class ExtensionView extends VDomRenderer<ListModel> {
 }
 
   /**
-   * Render the list view using the virtual DOM.
+   * Render the extension discovery view using the virtual DOM.
    */
   protected render(): React.ReactElement<any>[] {
     const model = this.model!;
@@ -253,14 +303,30 @@ class ExtensionView extends VDomRenderer<ListModel> {
     return elements;
   }
 
+  /**
+   * Callback handler for the user specifies a new search query.
+   *
+   * @param value The new query.
+   */
   onSearch(value: string) {
     this.model!.query = value;
   }
 
+  /**
+   * Callback handler for the user changes the page of the search result pagination.
+   *
+   * @param value The pagination page number.
+   */
   onPage(value: number) {
     this.model!.page = value;
   }
 
+  /**
+   * Callback handler for when the user wants to perform an action on an extension.
+   *
+   * @param action The action to perform.
+   * @param entry The entry to perform the action on.
+   */
   onAction(action: Action, entry: IEntry) {
     switch(action) {
     case 'install':
@@ -314,8 +380,8 @@ class ExtensionView extends VDomRenderer<ListModel> {
     this.node.removeEventListener('input', this);
     this.node.removeEventListener('focus', this, true);
     this.node.removeEventListener('blur', this, true);
-}
-  
+  }
+
   /**
    * A message handler invoked on an `'activate-request'` message.
    */
@@ -327,7 +393,6 @@ class ExtensionView extends VDomRenderer<ListModel> {
     }
   }
 
-  
   /**
    * Toggle the focused modifier based on the input node focus state.
    */

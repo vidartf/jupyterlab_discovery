@@ -1,7 +1,9 @@
 'use strict'
 
 
-
+/**
+ * Information about a person in search results.
+ */
 export
 interface IPerson {
   username: string,
@@ -9,6 +11,9 @@ interface IPerson {
 }
 
 
+/**
+ * NPM registry search result structure.
+ */
 export
 interface ISearchResult {
   objects: {
@@ -68,7 +73,7 @@ interface IPackageMetadata {
 
 
 /**
- * Searches the NPM repo via web API: https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md
+ * Searches the NPM registry via web API: https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md
  */
 export
 class Searcher {
@@ -77,26 +82,20 @@ class Searcher {
     this.repoUri = repoUri;
   }
 
-  searchExtension(query: string, page=0, pageination=250): Promise<ISearchResult> {
+  /**
+   * Search for a jupyterlab extension.
+   * 
+   * @param query The query to send. `keywords:"jupyterlab extension"` will be appended to the query.
+   * @param page The page of results to fetch.
+   * @param pageination The pagination size to use. See registry API documentation for acceptable values.
+   */
+  searchExtensions(query: string, page=0, pageination=250): Promise<ISearchResult> {
     const uri = new URL('/-/v1/search', this.repoUri);
     // Note: Spaces are encoded to '+' signs!
     let text = `${query} keywords:"jupyterlab extension"`
     uri.searchParams.append('text', text);
     uri.searchParams.append('size', pageination.toString());
     uri.searchParams.append('from', (pageination * page).toString());
-    return fetch(uri.toString()).then((response: Response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return [];
-    });
-  }
-
-
-  findAllExtensions(): Promise<ISearchResult>  {
-    const uri = new URL('/-/v1/search', this.repoUri);
-    let text = `keywords:jupyterlab+extension not:insecure`
-    uri.searchParams.append('text', text);
     return fetch(uri.toString()).then((response: Response) => {
       if (response.ok) {
         return response.json();
