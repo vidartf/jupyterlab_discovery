@@ -50,7 +50,7 @@ class ListModel extends VDomModel {
   constructor() {
     super();
     this._installed = [];
-    this._installable = [];
+    this._searchResult = [];
     this.settings = ServerConnection.makeSettings({withCredentials: true});
   }
 
@@ -65,8 +65,8 @@ class ListModel extends VDomModel {
     return this._installed;
   }
 
-  get installable(): ReadonlyArray<IEntry> {
-    return this._installable;
+  get searchResult(): ReadonlyArray<IEntry> {
+    return this._searchResult;
   }
 
   protected async translateSearchResult(res: Promise<ISearchResult>): Promise<{[key: string]: IEntry}> {
@@ -178,13 +178,15 @@ class ListModel extends VDomModel {
     }
     this._installed = installed;
 
-    let installable: IEntry[] = [];
+    let searchResult: IEntry[] = [];
     for (let key of Object.keys(searchMap)) {
       if (installedMap[key] === undefined) {
-        installable.push((searchMap)[key]);
+        searchResult.push(searchMap[key]);
+      } else {
+        searchResult.push(installedMap[key]);
       }
     }
-    this._installable = installable;
+    this._searchResult = searchResult;
     try {
       this._totalEntries = (await search).total;
     } catch (error) {
@@ -253,7 +255,7 @@ class ListModel extends VDomModel {
   private _totalEntries: number = 0;
 
   protected _installed: IEntry[];
-  protected _installable: IEntry[];
+  protected _searchResult: IEntry[];
   protected settings: ServerConnection.ISettings;
 
   protected searcher = new Searcher();

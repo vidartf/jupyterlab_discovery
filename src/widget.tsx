@@ -6,11 +6,18 @@ import {
   VDomRenderer
 } from '@jupyterlab/apputils';
 
+import {
+  Message
+} from '@phosphor/messaging';
+
 import * as ReactPaginate from 'react-paginate';
 
 import {
   ListModel, IEntry, Action
 } from './model';
+
+
+// TODO: Replace pagination with lazy loading of lower search results
 
 
 export
@@ -27,17 +34,16 @@ class SearchBar extends React.Component<SearchBar.IProperties, SearchBar.IState>
    */
   render(): React.ReactElement<any> {
     return (
-      <div className='jp-discovery-search-bar p-CommandPalette-search'>
-        <div className='p-CommandPalette-wrapper'>
+      <div className='jp-discovery-search-bar'>
+        <div className='jp-discovery-search-wrapper'>
           <input
             type='text'
-            className='p-CommandPalette-input'
+            className='jp-discovery-input'
             placeholder={ this.props.placeholder }
             onChange={ this.handleChange.bind(this) }
             value={ this.state.value }
           />
         </div>
-        <button onClick={() => this.props.onSearch(this.state.value)}>Search</button>
       </div>
     );
   }
@@ -55,7 +61,6 @@ namespace SearchBar {
   export
   interface IProperties {
     placeholder: string;
-    onSearch: (value: string) => void;
   }
 
   export
@@ -150,11 +155,16 @@ function ListView(props: ListView.IProperties): React.ReactElement<any> {
       </div>
     );
   }
+  const listview = (
+    <ul className='jp-discovery-listview'>
+      {entryViews}
+    </ul>
+  )
   return (
-    <div className='jp-discovery-list-view-wrapper'>
-      <ul className='jp-discovery-list-view'>
-        {entryViews}
-      </ul>
+    <div className='jp-discovery-listview-wrapper'>
+      {
+        entryViews.length > 0 ? listview : <div key="message" className="jp-discovery-listview-message">No entries</div>
+      }
       {pagination}
     </div>
   );
@@ -181,6 +191,13 @@ class ExtensionView extends VDomRenderer<ListModel> {
   }
 
   /**
+   * The search input node.
+   */
+  get inputNode(): HTMLInputElement {
+    return this.node.getElementsByClassName('jp-discovery-input')[0] as HTMLInputElement;
+}
+
+  /**
    * Render the list view using the virtual DOM.
    */
   protected render(): React.ReactElement<any>[] {
@@ -190,18 +207,18 @@ class ExtensionView extends VDomRenderer<ListModel> {
       <SearchBar
         key='searchbar'
         placeholder='SEARCH'
-        onSearch={(value) => { this.onSearch(value); }}
       />,
     ];
+    const content = [];
     if (!model.initialized) {
       model.initialize();
-      elements.push(
-        <div className="jp-discovery-loader">Updating extensions list</div>
+      content.push(
+        <div  key='loading-placeholder' className="jp-discovery-loader">Updating extensions list</div>
       )
     }
-    if (model.installed.length) {
-      elements.push(
-        <header>Installed</header>,
+    if (!model.query && model.installed.length) {
+      content.push(
+        <header key='installed-header'>Installed</header>,
         <ListView
           key='installed'
           entries={model.installed}
@@ -210,24 +227,29 @@ class ExtensionView extends VDomRenderer<ListModel> {
           performAction={this.onAction.bind(this)}
           />,
       );
-    }
-    if (model.installable.length) {
-      elements.push(
-        <header>Available</header>,
+    } else if (!model.offline) {
+      content.push(
+        <header key='installable-header'>Search results</header>,
         <ListView
           key='installable'
-          entries={model.installable}
+          entries={model.searchResult}
           numPages={pages}
           onPage={(value) => { this.onPage(value); }}
           performAction={this.onAction.bind(this)}
         />,
       );
-    } else if (model.offline) {
-      elements.push(
-        <header>Available</header>,
-        <div className="jp-discovery-error">Error searching for extensions{model.errorMessage ?`: ${model.errorMessage}` : '.' }</div>,
+    } else {
+      content.push(
+        <div key='error-msg' className="jp-discovery-error">
+          Error searching for extensions{model.errorMessage ?`: ${model.errorMessage}` : '.' }
+        </div>,
       );
     }
+    elements.push(
+      <div key="content" className="jp-discovery-content">
+       {content}
+      </div>
+    )
     return elements;
   }
 
@@ -252,5 +274,65 @@ class ExtensionView extends VDomRenderer<ListModel> {
     default:
       throw new Error(`Invalid action: ${action}`)
     }
+  }
+
+    /**
+   * Handle the DOM events for the command palette.
+   *
+   * @param event - The DOM event sent to the command palette.
+   *
+   * #### Notes
+   * This method implements the DOM `EventListener` interface and is
+   * called in response to events on the command palette's DOM node.
+   * It should not be called directly by user code.
+   */
+  handleEvent(event: Event): void {
+    switch (event.type) {
+    case 'input':
+      this.onSearch(this.inputNode.value);
+      break;
+    case 'focus':
+    case 'blur':
+      this._toggleFocused();
+      break;
+    }
+  }
+
+  /**
+   * A message handler invoked on a `'before-attach'` message.
+   */
+  protected onBeforeAttach(msg: Message): void {
+    this.node.addEventListener('input', this);
+    this.node.addEventListener('focus', this, true);
+    this.node.addEventListener('blur', this, true);
+  }
+
+  /**
+   * A message handler invoked on an `'after-detach'` message.
+   */
+  protected onAfterDetach(msg: Message): void {
+    this.node.removeEventListener('input', this);
+    this.node.removeEventListener('focus', this, true);
+    this.node.removeEventListener('blur', this, true);
+}
+  
+  /**
+   * A message handler invoked on an `'activate-request'` message.
+   */
+  protected onActivateRequest(msg: Message): void {
+    if (this.isAttached) {
+      let input = this.inputNode;
+      input.focus();
+      input.select();
+    }
+  }
+
+  
+  /**
+   * Toggle the focused modifier based on the input node focus state.
+   */
+  private _toggleFocused(): void {
+    let focused = document.activeElement === this.inputNode;
+    this.toggleClass('p-mod-focused', focused);
   }
 }

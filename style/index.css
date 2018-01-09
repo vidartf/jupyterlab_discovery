@@ -5,15 +5,68 @@
     background: var(--jp-layout-color1);
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
 }
 
-.jp-discovery-list-view-wrapper {
+.jp-discovery-search-bar {
+    padding: 8px;
+    background-color: var(--jp-border-color3);
+    border-bottom: 1px solid var(--jp-border-color1);
+    box-shadow: var(--jp-toolbar-box-shadow);
+    z-index: 2;
+    flex: 0 0 auto;
+}
+
+.jp-discovery-input {
+    background: transparent;
+    width: calc(100% - 18px);
+    float: left;
+    border: none;
+    outline: none;
+    font-size: var(--jp-ui-font-size1);
+    color: var(--jp-ui-font-color0);
+    line-height: var(--jp-private-commandpalette-search-height);
+}
+
+.jp-discovery-search-wrapper {
+    overflow: overlay;
+    padding: 0px 8px;
+    border: 1px solid var(--jp-border-color1);
+    background-color: white;
+    height: 30px;
+}
+
+.jp-discovery-search-wrapper::after {
+    content: " ";
+    color: white;
+    background-color: var(--jp-brand-color1);
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    height: 32px;
+    width: 12px;
+    padding: 0px 12px;
+    background-image: var(--jp-icon-search);
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.jp-discovery-view.p-mod-focused .jp-discovery-search-wrapper {
+    border: var(--jp-border-width) solid var(--md-blue-500);
+    box-shadow: inset 0 0 4px var(--md-blue-300);
+}
+
+.jp-discovery-content {
+    overflow: auto;
+}
+
+.jp-discovery-listview-wrapper {
     margin: 0;
     padding: 0;
     padding-bottom: 5px;
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
 }
 
 .jp-discovery-view header {
@@ -21,12 +74,11 @@
     padding-bottom: 0;
 }
 
-.jp-discovery-list-view {
+.jp-discovery-listview {
     list-style-type: none;
     margin: 0;
     padding: 0;
     min-height: 0;
-    overflow: auto;
 }
 
 .jp-discovery-entry {
@@ -89,6 +141,11 @@
 
 
 .jp-discovery-loader,
-.jp-discovery-error {
+.jp-discovery-error,
+.jp-discovery-listview-message {
     padding: 4px 12px;
+}
+
+.jp-discovery-listview-message {
+    font-size: var(--jp-ui-font-size1);
 }
