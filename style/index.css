@@ -163,7 +163,7 @@
 }
 
 .jp-discovery-entry.jp-discovery-entry-warning {
-    border-left: solid 8px var(--jp-warning-color2);
+    border-left: solid 8px var(--jp-warn-color2);
     padding-left: 4px;
 }
 
