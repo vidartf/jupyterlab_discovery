@@ -1,4 +1,8 @@
 
+/*
+  Main widget layout and styling
+*/
+
 .jp-discovery-view {
     padding-bottom: 0px;
     color: var(--jp-ui-font-color1);
@@ -6,6 +10,40 @@
     display: flex;
     flex-direction: column;
 }
+
+.jp-discovery-content {
+    overflow: auto;
+}
+
+
+/*
+  List view layout and styling
+*/
+
+.jp-discovery-listview-wrapper {
+    margin: 0;
+    padding: 0;
+    padding-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+}
+
+.jp-discovery-view header {
+    padding: 5px;
+    padding-bottom: 0;
+}
+
+.jp-discovery-listview {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+}
+
+/*
+  Search bar layout and styling
+*/
 
 .jp-discovery-search-bar {
     padding: 8px;
@@ -56,47 +94,10 @@
     box-shadow: inset 0 0 4px var(--jp-brand-color2);
 }
 
-.jp-discovery-content {
-    overflow: auto;
-}
 
-.jp-discovery-listview-wrapper {
-    margin: 0;
-    padding: 0;
-    padding-bottom: 5px;
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-}
-
-.jp-discovery-view header {
-    padding: 5px;
-    padding-bottom: 0;
-}
-
-.jp-discovery-listview {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    min-height: 0;
-}
-
-.jp-discovery-entry {
-    padding: 4px 12px;
-    border-bottom: solid var(--jp-border-width) var(--jp-border-color2);
-}
-
-.jp-discovery-entry-name {
-    font-size: var(--jp-ui-font-size1);
-    font-weight: 600;
-    margin-bottom: 3px;
-}
-.jp-discovery-entry-description {
-    font-size: var(--jp-ui-font-size1);
-    color: var(--jp-ui-font-color2);
-    font-weight: 400;
-}
-
+/*
+  List view pagination styling
+*/
 
 .jp-discovery-view ul.pagination {
     display: inline-block;
@@ -116,6 +117,11 @@
     display: flex;
     justify-content: center;
 }
+
+
+/*
+  Entry buttons visibility
+*/
 
 .jp-discovery-entry .jp-discovery-install,
 .jp-discovery-entry .jp-discovery-entry-update .jp-discovery-update,
@@ -142,6 +148,26 @@
 }
 
 
+/*
+  Entry layout and styling
+*/
+
+.jp-discovery-entry {
+    padding: 4px 12px;
+    border-bottom: solid var(--jp-border-width) var(--jp-border-color2);
+}
+
+.jp-discovery-entry-name {
+    font-size: var(--jp-ui-font-size1);
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.jp-discovery-entry-description {
+    font-size: var(--jp-ui-font-size1);
+    color: var(--jp-ui-font-color2);
+    font-weight: 400;
+}
+
 .jp-discovery-loader,
 .jp-discovery-error,
 .jp-discovery-listview-message {
@@ -157,6 +183,10 @@
     flex-direction: row;
     justify-content: space-between;
 }
+
+/*
+  Entry buttons layout and styling
+*/
 
 .jp-discovery-entry-buttons {
     display: flex;
