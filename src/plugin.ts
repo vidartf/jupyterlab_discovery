@@ -44,7 +44,7 @@ const extension: JupyterLabPlugin<void> = {
     view.id = 'discover.main-view';
     restorer.add(view, namespaceToken);
     view.title.label = 'Extensions';
-    shell.addToLeftArea(view, { rank: 100 });
+    shell.addToLeftArea(view);
 
 
     // If the layout is a fresh session without saved data, open file view.
