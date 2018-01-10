@@ -1,14 +1,22 @@
 'use strict'
 
 import {
+  VDomModel
+} from '@jupyterlab/apputils';
+
+import {
   ServerConnection
 } from '@jupyterlab/services';
 
 import {
-  VDomModel
-} from '@jupyterlab/apputils';
+  BuildManager
+} from '@jupyterlab/services/lib/builder';
 
 import * as semver from 'semver';
+
+import {
+  doBuild
+} from './build-helper';
 
 import {
   Searcher, ISearchResult
@@ -62,10 +70,11 @@ type Action = 'install' | 'uninstall' | 'enable' | 'disable';
  */
 export
 class ListModel extends VDomModel {
-  constructor() {
+  constructor(builder: BuildManager) {
     super();
     this._installed = [];
     this._searchResult = [];
+    this.builder = builder;
     this.serverConnectionSettings = ServerConnection.makeSettings();
   }
 
@@ -281,6 +290,7 @@ class ListModel extends VDomModel {
       }),
     };
     return ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
+      this.triggerBuildCheck();
       return response.json() as Promise<IInstalledEntry[]>;
     });
   }
@@ -342,6 +352,49 @@ class ListModel extends VDomModel {
   }
 
   /**
+   * Trigger a build check to incorporate actions taken.
+   */
+  triggerBuildCheck(): void {
+    if (this.builder.isAvailable && !this.promptBuild) {
+      this.builder.getStatus().then(response => {
+        if (response.status === 'building') {
+          // Piggy-back onto existing build
+          // TODO: Can this cause dialog collision on build completion?
+          return doBuild(this.builder);
+        }
+        if (response.status !== 'needed') {
+          return;
+        }
+        if (!this.promptBuild) {
+          this.promptBuild = true;
+          this.stateChanged.emit(undefined);
+        }
+      });
+    }
+  }
+
+  /**
+   * Perform a build on the server
+   */
+  performBuild(): void {
+    if (this.promptBuild) {
+      this.promptBuild = false;
+      this.stateChanged.emit(undefined);
+    }
+    doBuild(this.builder);
+  }
+
+  /**
+   * Ignore a build recommendation
+   */
+  ignoreBuildRecommendation(): void {
+    if (this.promptBuild) {
+      this.promptBuild = false;
+      this.stateChanged.emit(undefined);
+    }
+  }
+
+  /**
    * Set to true if an error occurs when trying to query the NPM repository.
    */
   offline: boolean | undefined;
@@ -355,6 +408,11 @@ class ListModel extends VDomModel {
    * Whether the model has finished async initialization.
    */
   initialized: boolean = false;
+
+  /**
+   * Whether a fresh build should be considered due to actions taken.
+   */
+  promptBuild: boolean = false;
 
   private _query: string = '';
   private _page: number = 0;
@@ -373,4 +431,6 @@ class ListModel extends VDomModel {
    * A helper for performing searches of jupyterlab extensions on the NPM repository.
    */
   protected searcher = new Searcher();
+
+  protected builder: BuildManager;
 }

@@ -39,8 +39,8 @@ const extension: JupyterLabPlugin<void> = {
   autoStart: true,
   requires: [ILayoutRestorer],
   activate: (app: JupyterLab, restorer: ILayoutRestorer) => {
-    const { commands, shell } = app;
-    const view = new ExtensionView();
+    const { commands, shell, serviceManager} = app;
+    const view = new ExtensionView(serviceManager.builder);
     view.id = 'discover.main-view';
     restorer.add(view, namespaceToken);
     view.title.label = 'Extensions';

@@ -7,6 +7,10 @@ import {
 } from '@jupyterlab/apputils';
 
 import {
+  BuildManager
+} from '@jupyterlab/services/lib/builder';
+
+import {
   Message
 } from '@phosphor/messaging';
 
@@ -78,6 +82,37 @@ namespace SearchBar {
      * The value of the search bar input field.
      */
     value: string;
+  }
+}
+
+
+function BuildPrompt(props: BuildPrompt.IProperties): React.ReactElement<any> {
+  return (
+    <div className="jp-discovery-buildprompt">
+      <div className="jp-discovery-buildmessage">
+        A build is needed to include the latest changes
+      </div>
+      <button
+        className="jp-discovery-rebuild"
+        onClick={props.performBuild}
+      >
+        Rebuild
+      </button>
+      <button
+        className="jp-discovery-ignorebuild"
+        onClick={props.ignoreBuild}
+      >
+        Ignore
+      </button>
+    </div>
+  );
+}
+
+namespace BuildPrompt {
+  export
+  interface IProperties {
+    performBuild: () => void;
+    ignoreBuild: () => void;
   }
 }
 
@@ -238,9 +273,9 @@ namespace ListView {
  */
 export
 class ExtensionView extends VDomRenderer<ListModel> {
-  constructor() {
+  constructor(builder: BuildManager) {
     super();
-    this.model = new ListModel();
+    this.model = new ListModel(builder);
     this.addClass('jp-discovery-view');
   }
 
@@ -263,6 +298,15 @@ class ExtensionView extends VDomRenderer<ListModel> {
         placeholder='SEARCH'
       />,
     ];
+    if (model.promptBuild) {
+      elements.push(
+        <BuildPrompt
+          key="buildpromt"
+          performBuild={() => { model.performBuild(); }}
+          ignoreBuild={() => { model.ignoreBuildRecommendation(); }}
+        />
+      );
+    }
     const content = [];
     if (!model.initialized) {
       model.initialize();

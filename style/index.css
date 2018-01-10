@@ -75,7 +75,7 @@
 
 .jp-discovery-search-wrapper::after {
     content: " ";
-    color: white;
+    color: var(--jp-ui-inverse-font-color1);
     background-color: var(--jp-brand-color1);
     position: absolute;
     top: 8px;
@@ -222,4 +222,27 @@
 
 .jp-discovery-entry button.jp-discovery-update:hover {
     background-color: var(--jp-success-color3);
+}
+
+
+/*
+  Rebuild prompt dialog
+*/
+
+.jp-discovery-buildprompt {
+    background-color: var(--jp-brand-color1);
+    color: var(--jp-ui-inverse-font-color1);
+    padding: 4px 8px;
+    font-size: var(--jp-ui-font-size1);
+    font-weight: 400;
+}
+
+.jp-discovery-buildprompt button {
+    border: none;
+    background-color: transparent;
+    color: var(--jp-ui-inverse-font-color1);
+    font-size: var(--jp-ui-font-size1);
+    font-weight: 600;
+    float: right;
+    margin: 3px;
 }
