@@ -45,6 +45,7 @@ export
 interface IInstalledEntry {
   name: string;
   description: string;
+  installed?: boolean;
   enabled: boolean;
   core: boolean;
   latest_version: string;
@@ -141,7 +142,7 @@ class ListModel extends VDomModel {
           name: pkg.name,
           description: pkg.description,
           python_package: null,
-          installed: true,
+          installed: pkg.installed !== false,
           enabled: pkg.enabled,
           status: pkg.status,
           latest_version: pkg.latest_version,

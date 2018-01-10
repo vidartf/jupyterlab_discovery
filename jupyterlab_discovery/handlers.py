@@ -10,6 +10,7 @@ except ImportError:
 import json
 from subprocess import check_output, CalledProcessError, TimeoutExpired, STDOUT
 import os
+import re
 
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
@@ -28,9 +29,9 @@ from jupyterlab.commands import (
 
 
 def _make_extension_entry(name, description, enabled, core, latest_version,
-                          installed_version, status):
+                          installed_version, status, installed=None):
     """Create an extension entry that can be sent to the client"""
-    return dict(
+    ret = dict(
         name=name,
         description=description,
         enabled=enabled,
@@ -39,12 +40,35 @@ def _make_extension_entry(name, description, enabled, core, latest_version,
         installed_version=installed_version,
         status=status,
     )
+    if installed is not None:
+        ret['installed'] = installed
+    return ret
 
 
 def _ensure_compat_errors(info, app_dir, logger):
     """Ensure that the app info has compat_errors field"""
     handler = _AppHandler(app_dir, logger)
     info['compat_errors'] = handler._get_extension_compat()
+
+
+_message_map = {
+    'install': re.compile(r'(?P<name>.*) needs to be included in build'),
+    'uninstall': re.compile(r'(?P<name>.*) needs to be removed from build'),
+    'update': re.compile(r'(?P<name>.*) changed from (?P<oldver>.*) to (?P<newver>.*)'),
+}
+
+def _build_check_info(app_dir, logger):
+    """Get info about packages scheduled for (un)install/update"""
+    handler = _AppHandler(app_dir, logger)
+    messages = handler.build_check(fast=True)
+    # Decode the messages into a dict:
+    status = {'install': [], 'uninstall': [], 'update': []}
+    for msg in messages:
+        for key, pattern in _message_map.items():
+            match = pattern.match(msg)
+            if match:
+                status[key].append(match.group('name'))
+    return status
 
 
 class ExtensionManager(object):
@@ -61,13 +85,19 @@ class ExtensionManager(object):
     def list_extensions(self):
         """Handle a request for all installed extensions"""
         info = get_app_info(app_dir=self.app_dir, logger=self.log)
+        build_check_info = _build_check_info(self.app_dir, self.log)
         _ensure_compat_errors(info, self.app_dir, self.log)
         extensions = []
+        # TODO: Ensure loops can run in parallel
         for name, data in info['extensions'].items():
             status = 'ok'
             pkg_info = yield self._get_pkg_info(name, data)
             if info['compat_errors'].get(name, None):
                 status = 'error'
+            else:
+                for packages in build_check_info.values():
+                    if name in packages:
+                        status = 'warning'
             extensions.append(_make_extension_entry(
                 name=name,
                 description=pkg_info['description'],
@@ -78,6 +108,18 @@ class ExtensionManager(object):
                 latest_version=pkg_info['wanted_version'],
                 installed_version=data['version'],
                 status=status,
+            ))
+        for name in build_check_info['uninstall']:
+            data = yield self._get_scheduled_uninstall_info(name)
+            extensions.append(_make_extension_entry(
+                name=name,
+                description=data['description'],
+                installed=False,
+                enabled=False,
+                core=False,
+                latest_version=data['version'],
+                installed_version=data['version'],
+                status='warning',
             ))
         raise gen.Return(extensions)
 
@@ -163,6 +205,17 @@ class ExtensionManager(object):
                             'latest_version': entry[3],
                         }
         return cache
+
+    @run_on_executor
+    def _get_scheduled_uninstall_info(self, name):
+        """Get information about a package that is scheduled for uninstallation"""
+        target = os.path.join(
+            self.app_dir, 'staging', 'node_modules', name, 'package.json')
+        if os.path.exists(target):
+            with open(target) as fid:
+                return json.load(fid)
+        else:
+            return None
 
 
 class ExtensionHandler(APIHandler):
