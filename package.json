@@ -31,9 +31,9 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.14.1",
-    "@jupyterlab/apputils": "^0.14.1",
-    "@jupyterlab/services": "^1.0.1",
+    "@jupyterlab/application": "^0.15.0",
+    "@jupyterlab/apputils": "^0.15.0",
+    "@jupyterlab/services": "^1.1.0",
     "react-paginate": "^5.0.0",
     "semver": "^5.4.1"
   },
