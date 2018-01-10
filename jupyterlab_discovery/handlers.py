@@ -23,6 +23,7 @@ from jupyterlab.jlpmapp import YARN_PATH, HERE as jlab_dir
 from jupyterlab.commands import (
     get_app_info, install_extension, uninstall_extension,
     enable_extension, disable_extension, _read_package,
+    _AppHandler
 )
 
 
@@ -40,6 +41,12 @@ def _make_extension_entry(name, description, enabled, core, latest_version,
     )
 
 
+def _ensure_compat_errors(info, app_dir, logger):
+    """Ensure that the app info has compat_errors field"""
+    handler = _AppHandler(app_dir, logger)
+    info['compat_errors'] = handler._get_extension_compat()
+
+
 class ExtensionManager(object):
     executor = ThreadPoolExecutor(max_workers=5)
 
@@ -54,13 +61,13 @@ class ExtensionManager(object):
     def list_extensions(self):
         """Handle a request for all installed extensions"""
         info = get_app_info(app_dir=self.app_dir, logger=self.log)
+        _ensure_compat_errors(info, self.app_dir, self.log)
         extensions = []
         for name, data in info['extensions'].items():
             status = 'ok'
             pkg_info = yield self._get_pkg_info(name, data)
-            # TODO: Make sure JLab always gives compat_errors in info:
-            #if name in info['compat_errors']:
-            #    status = 'error'
+            if info['compat_errors'].get(name, None):
+                status = 'error'
             extensions.append(_make_extension_entry(
                 name=name,
                 description=pkg_info['description'],
