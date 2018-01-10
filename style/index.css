@@ -157,6 +157,16 @@
     border-bottom: solid var(--jp-border-width) var(--jp-border-color2);
 }
 
+.jp-discovery-entry.jp-discovery-entry-error {
+    border-left: solid 8px var(--jp-error-color2);
+    padding-left: 4px;
+}
+
+.jp-discovery-entry.jp-discovery-entry-warning {
+    border-left: solid 8px var(--jp-warning-color2);
+    padding-left: 4px;
+}
+
 .jp-discovery-entry-name {
     font-size: var(--jp-ui-font-size1);
     font-weight: 600;
