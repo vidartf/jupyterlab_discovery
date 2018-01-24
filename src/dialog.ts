@@ -141,7 +141,7 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[], serviceMan
       Dialog.warnButton({ label: 'Install' })],
   });
 
-  dialogPromise.then((result) => {
+  let installPromise = dialogPromise.then((result) => {
     if (!result.button.accept) {
       return;
     }
@@ -171,7 +171,9 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[], serviceMan
     }
   });
 
-  return dialogPromise.then((result) => {
+  return installPromise.then(() => {
+    return dialogPromise;
+  }).then((result) => {
     if (!result.button.accept) {
       return false;
     }
