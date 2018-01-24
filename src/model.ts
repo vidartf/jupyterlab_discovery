@@ -5,12 +5,8 @@ import {
 } from '@jupyterlab/apputils';
 
 import {
-  ServerConnection
+  ServerConnection, ServiceManager, Kernel
 } from '@jupyterlab/services';
-
-import {
-  BuildManager
-} from '@jupyterlab/services/lib/builder';
 
 import * as semver from 'semver';
 
@@ -19,8 +15,12 @@ import {
 } from './build-helper';
 
 import {
-  Searcher, ISearchResult
+  Searcher, ISearchResult, IKernelInstallInfo
 } from './query';
+
+import {
+  presentCompanions
+} from './dialog';
 
 /**
  * Information about an extension
@@ -53,6 +53,12 @@ interface IInstalledEntry {
   status: 'ok' | 'warning' | 'error' | 'deprecated' | null;
 }
 
+export
+type KernelCompanion = {
+  kernelInfo: IKernelInstallInfo,
+  kernels: Kernel.ISpecModel[]
+}
+
 
 /**
  * The server API path for querying/modifying installed extensions.
@@ -71,11 +77,11 @@ type Action = 'install' | 'uninstall' | 'enable' | 'disable';
  */
 export
 class ListModel extends VDomModel {
-  constructor(builder: BuildManager) {
+  constructor(serviceManager: ServiceManager) {
     super();
     this._installed = [];
     this._searchResult = [];
-    this.builder = builder;
+    this.serviceManager = serviceManager;
     this.serverConnectionSettings = ServerConnection.makeSettings();
   }
 
@@ -305,9 +311,13 @@ class ListModel extends VDomModel {
     if (entry.installed) {
       throw new Error(`Already installed: ${entry.name}`);
     }
-    this._performAction('install', entry).then((data) => {
-      this.update();
-    });
+    this.checkCompanionPackages(entry).then((shouldInstall) => {
+      if (shouldInstall) {
+        return this._performAction('install', entry).then((data) => {
+          this.update();
+        });;
+      }
+    })
   }
 
   /**
@@ -353,15 +363,42 @@ class ListModel extends VDomModel {
   }
 
   /**
+   * Check for companion packages in kernels or server.
+   *
+   * @param entry An entry indicating which extension to check.
+   */
+  checkCompanionPackages(entry: IEntry): Promise<boolean> {
+    return this.searcher.fetchPackageData(entry.name, entry.latest_version).then((data) => {
+      if (!data || !data.jupyterlab || !data.jupyterlab.discovery) {
+        return true;
+      }
+      let discovery = data.jupyterlab.discovery;
+      let kernelCompanions: {kernelInfo: IKernelInstallInfo, kernels: Kernel.ISpecModel[]}[] = [];
+      if (discovery.kernel) {
+        // match specs
+        for (let kernelInfo of discovery.kernel) {
+          let matches = matchSpecs(kernelInfo, this.serviceManager.specs);
+          kernelCompanions.push({kernelInfo, kernels: matches})
+        }
+      }
+      if (kernelCompanions.length < 1 && !discovery.server) {
+        return true;
+      }
+      return presentCompanions(kernelCompanions);
+    });
+  }
+
+  /**
    * Trigger a build check to incorporate actions taken.
    */
   triggerBuildCheck(): void {
-    if (this.builder.isAvailable && !this.promptBuild) {
-      this.builder.getStatus().then(response => {
+    let builder = this.serviceManager.builder;
+    if (builder.isAvailable && !this.promptBuild) {
+      builder.getStatus().then(response => {
         if (response.status === 'building') {
           // Piggy-back onto existing build
           // TODO: Can this cause dialog collision on build completion?
-          return doBuild(this.builder);
+          return doBuild(builder);
         }
         if (response.status !== 'needed') {
           return;
@@ -382,7 +419,7 @@ class ListModel extends VDomModel {
       this.promptBuild = false;
       this.stateChanged.emit(undefined);
     }
-    doBuild(this.builder);
+    doBuild(this.serviceManager.builder);
   }
 
   /**
@@ -433,5 +470,42 @@ class ListModel extends VDomModel {
    */
   protected searcher = new Searcher();
 
-  protected builder: BuildManager;
+  protected serviceManager: ServiceManager;
+}
+
+
+/**
+ * Match kernel specs against kernel spec regexps
+ *
+ * @param kernelInfo The info containing the regexp patterns
+ * @param specs The available kernel specs.
+ */
+function matchSpecs(kernelInfo: IKernelInstallInfo, specs: Kernel.ISpecModels | null): Kernel.ISpecModel[] {
+  if (!specs) {
+    return [];
+  }
+  let matches: Kernel.ISpecModel[] = [];
+  let reLang: RegExp | null = null;
+  let reName: RegExp | null = null;
+  if (kernelInfo.kernel_spec.language) {
+    reLang = new RegExp(kernelInfo.kernel_spec.language);
+  }
+  if (kernelInfo.kernel_spec.display_name) {
+    reName = new RegExp(kernelInfo.kernel_spec.display_name);
+  }
+  for (let key of Object.keys(specs.kernelspecs)) {
+    let spec = specs.kernelspecs[key];
+    let match = false;
+    if (reLang) {
+      match = reLang.test(spec.language);
+    }
+    if (!match && reName) {
+      match = reName.test(spec.display_name);
+    }
+    if (match) {
+      matches.push(spec);
+      continue
+    }
+  }
+  return matches;
 }

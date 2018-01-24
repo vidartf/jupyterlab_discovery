@@ -1,3 +1,5 @@
+import { JSONObject } from "@phosphor/coreutils";
+
 'use strict'
 
 
@@ -72,6 +74,35 @@ interface IPackageMetadata {
 }
 
 
+export
+interface IInstallInfo {
+  base: JSONObject
+  [key: string]: any;
+}
+
+export
+interface IKernelInstallInfo extends IInstallInfo {
+  kernel_spec: {
+    language?: string;
+    display_name? : string;
+  }
+}
+
+
+export
+interface IDiscoveryMetadata {
+  server: IInstallInfo;
+  kernel: IKernelInstallInfo[];
+}
+
+export
+interface IJupyterLabPackageData {
+  jupyterlab?: {
+    discovery?: IDiscoveryMetadata;
+  }
+}
+
+
 /**
  * Searches the NPM registry via web API: https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md
  */
@@ -101,6 +132,22 @@ class Searcher {
         return response.json();
       }
       return [];
+    });
+  }
+
+  /**
+   * Fetch package.json of a package
+   *
+   * @type {string}
+   * @memberof Searcher
+   */
+  fetchPackageData(name: string, version: string): Promise<IJupyterLabPackageData | null> {
+    const uri = new URL(`/${name}@${version}/package.json`, 'https://unpkg.com');
+    return fetch(uri.toString()).then((response: Response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      return null;
     });
   }
 

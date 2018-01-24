@@ -7,8 +7,8 @@ import {
 } from '@jupyterlab/apputils';
 
 import {
-  BuildManager
-} from '@jupyterlab/services/lib/builder';
+  ServiceManager
+} from '@jupyterlab/services';
 
 import {
   Message
@@ -273,9 +273,9 @@ namespace ListView {
  */
 export
 class ExtensionView extends VDomRenderer<ListModel> {
-  constructor(builder: BuildManager) {
+  constructor(serviceManager: ServiceManager) {
     super();
-    this.model = new ListModel(builder);
+    this.model = new ListModel(serviceManager);
     this.addClass('jp-discovery-view');
   }
 
