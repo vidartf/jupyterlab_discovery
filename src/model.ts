@@ -163,7 +163,7 @@ class ListModel extends VDomModel {
 
   /**
    * The current NPM repository search query.
-   * 
+   *
    * Setting its value triggers a new search.
    */
   get query(): string {
@@ -384,7 +384,7 @@ class ListModel extends VDomModel {
       if (kernelCompanions.length < 1 && !discovery.server) {
         return true;
       }
-      return presentCompanions(kernelCompanions);
+      return presentCompanions(kernelCompanions, this.serviceManager);
     });
   }
 

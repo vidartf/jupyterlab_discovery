@@ -256,3 +256,14 @@
     float: right;
     margin: 3px;
 }
+
+/*
+  Companion packages dialog
+*/
+
+input[type=checkbox] {
+  appearance: checkbox;
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
+  height: auto;
+}

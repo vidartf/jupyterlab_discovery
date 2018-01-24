@@ -1,5 +1,3 @@
-import { JSONObject } from "@phosphor/coreutils";
-
 'use strict'
 
 
@@ -75,9 +73,17 @@ interface IPackageMetadata {
 
 
 export
+interface IInstallInfoEntry {
+  name?: string;
+  bundles_extension?: boolean;
+}
+
+
+export
 interface IInstallInfo {
-  base: JSONObject
-  [key: string]: any;
+  base: IInstallInfoEntry;
+  managers: string[];
+  overrides?: { [key: string]: IInstallInfoEntry | undefined };
 }
 
 export
