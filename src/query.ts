@@ -97,8 +97,8 @@ interface IKernelInstallInfo extends IInstallInfo {
 
 export
 interface IDiscoveryMetadata {
-  server: IInstallInfo;
-  kernel: IKernelInstallInfo[];
+  server?: IInstallInfo;
+  kernel?: IKernelInstallInfo[];
 }
 
 export

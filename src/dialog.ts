@@ -10,7 +10,7 @@ import {
 } from '@jupyterlab/coreutils';
 
 import {
-  Kernel, ServiceManager, KernelMessage
+  Kernel, ServiceManager, KernelMessage, TerminalSession
 } from '@jupyterlab/services';
 
 import {
@@ -20,7 +20,10 @@ import {
 import {
   KernelCompanion
 } from './model';
-import { IKernelInstallInfo, IInstallInfoEntry } from './query';
+
+import {
+  IKernelInstallInfo, IInstallInfoEntry, IInstallInfo
+} from './query';
 
 
 /**
@@ -29,9 +32,20 @@ import { IKernelInstallInfo, IInstallInfoEntry } from './query';
  * @param builder the build manager
  */
 export
-function presentCompanions(kernelCompanions: KernelCompanion[], serviceManager: ServiceManager): Promise<boolean> {
+function presentCompanions(kernelCompanions: KernelCompanion[],
+                           serverCompanion: IInstallInfo | undefined,
+                           serviceManager: ServiceManager): Promise<boolean> {
+  let entries = [];
+  if (serverCompanion) {
+    entries.push(h.p(
+      'This package has indicated that it needs a corresponding server extension: ',
+      h.code(serverCompanion.base.name!),
+    ));
+  }
   if (kernelCompanions) {
-    let entries = [];
+    entries.push(
+      h.p('This package has indicated that it needs a corresponding package for the kernel.')
+    );
     for (let entry of kernelCompanions) {
       entries.push(h.p('The package ', h.code(entry.kernelInfo.base.name!),
                    ' is required by the following kernels:'));
@@ -43,32 +57,37 @@ function presentCompanions(kernelCompanions: KernelCompanion[], serviceManager: 
         ...kernelEntries
       ));
     }
-
-    let body = h.div(
-      h.p('This package has indicated that it needs a corresponding package for the kernel.'),
-      ...entries
-    );
-    return showDialog({
-      title: 'Kernel companions',
-      body,
-      buttons: [
-        Dialog.cancelButton(),
-        Dialog.warnButton({
-          label: 'Install in Kernel',
-          caption: 'Try to install the package into the selected kernels.'
-        }),
-        Dialog.okButton({
-          label: 'Install Ext Only',
-          caption: 'Install only the Jupyterlab frontend extension.'
-        })],
-    }).then(result => {
-      if (result.button.label === 'Install in Kernel') {
-        return promptInstallCompanions(kernelCompanions, serviceManager);
-      }
-      return result.button.label === 'Install Ext Only';
-    });
   }
-  return Promise.resolve(true);
+  let body = h.div(
+    ...entries
+  );
+  let prompt: string;
+  if (kernelCompanions && serverCompanion) {
+    prompt = 'Install Companions';
+  } else if (kernelCompanions) {
+    prompt = 'Install in Kernel';
+  } else {
+    prompt = 'Install Server Ext';
+  }
+  return showDialog({
+    title: 'Kernel companions',
+    body,
+    buttons: [
+      Dialog.cancelButton(),
+      Dialog.warnButton({
+        label: prompt,
+        caption: 'Try to install the package into the selected kernels.'
+      }),
+      Dialog.okButton({
+        label: 'Install Ext Only',
+        caption: 'Install only the Jupyterlab frontend extension.'
+      })],
+  }).then(result => {
+    if (result.button.label === prompt) {
+      return promptInstallCompanions(kernelCompanions, serverCompanion, serviceManager);
+    }
+    return result.button.label === 'Install Ext Only';
+  });
 }
 
 
@@ -78,7 +97,9 @@ function presentCompanions(kernelCompanions: KernelCompanion[], serviceManager: 
  * @param builder the build manager
  */
 export
-function promptInstallCompanions(kernelCompanions: KernelCompanion[], serviceManager: ServiceManager): Promise<boolean> {
+function promptInstallCompanions(kernelCompanions: KernelCompanion[],
+                                 serverCompanion: IInstallInfo | undefined,
+                                 serviceManager: ServiceManager): Promise<boolean> {
   // VDOM entries to put in dialog:
   let entries = [];
   // Config (model) to be filled by dialog:
@@ -125,12 +146,39 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[], serviceMan
     entries.push(
       h.div(
         entry.kernelInfo.base.name!,
-        h.select(managerOptions),
+        h.select({
+          onchange: (event) => {
+            config[lookupName].manager = (event.target as HTMLSelectElement).value;
+          },
+        }, ...managerOptions),
         ...kernelEntries
     ));
   }
+  let serverEntries = [];
+  let serverManager = ''
+  if (serverCompanion) {
+    // Add select for picking which package panager to use
+    let managerOptions = [];
+    serverManager = serverCompanion.managers[0] || '';
+    for (let m of serverCompanion.managers || []) {
+      managerOptions.push(h.option({value: m}, m))
+    }
+    managerOptions.push(h.option({value: "-- Do nothing --"}));
+    serverEntries.push(h.p(
+      'Server extension install ',
+      h.code(serverCompanion.base.name!),
+      h.select(
+        {
+          onchange: (event) => {
+            serverManager = (event.target as HTMLSelectElement).value;
+          },
+        },
+        ...managerOptions),
+    ));
+  }
   let body = h.div(
-    h.p('Which kernel do you want to install into?'),
+    ...serverEntries,
+    h.p('Which kernel(s) do you want to install into?'),
     ...entries
   );
   let dialogPromise = showDialog({
@@ -168,6 +216,22 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[], serviceMan
           });
         });
       }
+    }
+
+    if (serverCompanion) {
+      serviceManager.terminals.startNew().then((terminal) => {
+        let override = {};
+        if (serverCompanion.overrides && serverManager in serverCompanion.overrides) {
+          override = serverCompanion.overrides[serverManager]!;
+        }
+        let info = {
+          ...serverCompanion.base,
+          ...override,
+        };
+        installOnServer(terminal, serverManager, info).catch(() => {
+          terminal.shutdown();
+        });
+      });
     }
   });
 
@@ -216,4 +280,51 @@ check_call([sys.executable, '-m', 'pip', 'install', '${info.name}'])
     });
   }
   return Promise.reject(`Unknown manager: ${manager}`);
+}
+
+
+function installOnServer(terminal: TerminalSession.ISession,
+                         manager: string,
+                         info: IInstallInfoEntry): Promise<void> {
+  let cmd = '';
+  if (manager === 'pip') {
+    cmd += `pip install ${info.name}`;
+  } else if (manager === 'conda') {
+    cmd += `conda install ${info.name}`;
+  }
+  cmd += '\r';
+
+  return new Promise((resolve) => {
+    //let output = '';
+    const onMessage = function(session: TerminalSession.ISession, msg: TerminalSession.IMessage) {
+      switch (msg.type) {
+      case 'stdout':
+        if (msg.content) {
+          //output += msg.content[0];
+        }
+        break;
+      case 'disconnect':
+        session.messageReceived.disconnect(onMessage);
+        // Process output?
+        resolve();
+        break;
+      default:
+        break;
+      }
+    }
+    terminal.ready.then(() => {
+      terminal.messageReceived.connect(onMessage);
+
+      terminal.send({
+        type: 'stdin',
+        content: [cmd]
+      });
+
+      terminal.send({
+        type: 'stdin',
+        content: ['exit\r']
+      });
+    });
+  });
+
 }

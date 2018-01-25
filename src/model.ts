@@ -384,7 +384,7 @@ class ListModel extends VDomModel {
       if (kernelCompanions.length < 1 && !discovery.server) {
         return true;
       }
-      return presentCompanions(kernelCompanions, this.serviceManager);
+      return presentCompanions(kernelCompanions, discovery.server, this.serviceManager);
     });
   }
 
