@@ -262,12 +262,32 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[],
 
 
 function installOnKernel(kernel: Kernel.IKernelConnection, manager: string, info: IInstallInfoEntry): Promise<void> {
+  let code: string | undefined;
   if (manager === 'pip') {
-    let code = `
+    code = `
 import sys
 from subprocess import check_call
 check_call([sys.executable, '-m', 'pip', 'install', '${info.name}'])
-`
+`;
+
+  } else if (manager === 'conda') {
+    code = `
+import sys
+from subprocess import check_call
+import os
+pjoin = os.path.join
+cmd_opt = ['install', '--prefix', sys.prefix, '--yes', '--quiet', '${info.name}']
+try:
+    check_call([pjoin(sys.prefix, 'bin', 'conda')] + cmd_opt)
+except FileNotFoundError:
+    if os.name == 'nt':
+        check_call([pjoin(sys.prefix, 'Scripts', 'conda')] + cmd_opt)
+    else:
+        raise
+`;
+
+  }
+  if (code) {
     let future = kernel.requestExecute({
       code,
       stop_on_error: true
@@ -290,7 +310,7 @@ function installOnServer(terminal: TerminalSession.ISession,
   if (manager === 'pip') {
     cmd += `pip install ${info.name}`;
   } else if (manager === 'conda') {
-    cmd += `conda install ${info.name}`;
+    cmd += `conda install --yes --quiet ${info.name}`;
   }
   cmd += '\r';
 
