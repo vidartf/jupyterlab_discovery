@@ -89,7 +89,7 @@ interface IInstallInfo {
 export
 interface IKernelInstallInfo extends IInstallInfo {
   kernel_spec: {
-    language?: string;
+    language: string;
     display_name? : string;
   }
 }
