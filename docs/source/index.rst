@@ -1,20 +1,55 @@
-.. jupyterlab-discovery documentation master file, created by
-   sphinx-quickstart on Wed Jan 31 17:30:24 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to jupyterlab-discovery's documentation!
-================================================
+JupyterLab Discovery
+====================
+
+Version: |release|
+
+
+**jupyterlab-discovery** is a `JupyterLab`_ extension for discovering and managing other
+JupyterLab extensions. The extension adds a side-bar component to JupyterLab, that
+allows the user to:
+
+- View the currently installed extensions and their status.
+- Search and discover other extensions published to the npm registry.
+- Install, uninstall, enable, disable and update extensions.
+
+
+.. figure:: images/base-state.png
+   :alt: Base view of the extension sidebar
+
+   Figure: Base view of the extension sidebar.
+
+
+Quickstart
+----------
+
+To install the extension, run the following command on the JupyterLab server,
+e.g. from the JupyterLab `terminal`_::
+
+    pip install jupyterlab-discovery
+
+This will install both the front-end extension, as well as the required server
+extension.
+
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Installation and usage
 
+   usage
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Development
 
-Indices and tables
-==================
+   extension-authors
+   develop-install
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. links
+
+.. _`JupyterLab`: http://jupyterlab.readthedocs.io
+
+.. _`terminal`: http://jupyterlab.readthedocs.io/en/stable/user/terminal.html
