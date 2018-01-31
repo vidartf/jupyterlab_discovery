@@ -63,10 +63,11 @@ import json
 here = os.path.dirname(__file__)
 repo = os.path.join(here, '..', '..')
 _version_js = os.path.join(repo, 'package.json')
-_package_version = json.load(_version_js)['version']
+with open(_version_js) as f:
+    _package_version = json.load(f)['version']
 
 # The short X.Y version.
-version = _package_version.split('.')[:2]
+version = '.'.join(_package_version.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = _package_version
 
