@@ -2,7 +2,10 @@
 JupyterLab Discovery
 ====================
 
-Version: |release|
+:Version:
+    |release|
+:Source code:
+    `Github page`_
 
 
 **jupyterlab-discovery** is a `JupyterLab`_ extension for discovering and managing other
@@ -53,3 +56,5 @@ Contents
 .. _`JupyterLab`: http://jupyterlab.readthedocs.io
 
 .. _`terminal`: http://jupyterlab.readthedocs.io/en/stable/user/terminal.html
+
+.. _`Github page`: http://github.com/vidartf/jupyterlab_discovery
