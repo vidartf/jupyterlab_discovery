@@ -1,5 +1,7 @@
 # jupyterlab_discovery
 
+[![Documentation Status](https://readthedocs.org/projects/jupyterlab-discovery/badge/?version=latest)](http://jupyterlab-discovery.readthedocs.io/en/latest/?badge=latest)
+
 A JupyterLab extension to facilitate the discovery and installation of other extensions
 
 
