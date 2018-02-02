@@ -36,28 +36,31 @@ Companion Packages
 
 If your package depends on the presence of one or more packages in the
 kernel, or an a notebook server extension, you can indicate this to
-jupyterlab-discovery by adding the following to your package.json::
+jupyterlab-discovery by adding metadata to your package.json file.
+The full options available are::
 
     "jupyterlab": {
       "discovery": {
-        "kernel": {
-          "kernel_spec": {
-            "language": "<regexp for matching kernel language>",
-            "display_name": "<regexp for matching kernel display name>"   // optional
-          },
-          "base": {
-            "name": "<the name of the kernel package>"
-          },
-          "overrides": {   // optional
-            "<manager name, e.g. 'pip'>": {
-              "name": "<name of kenrel package on pip, if it differs from base name>"
-            }
-          },
-          "managers": [   // list of package managers that have your kernel package
-              "pip",
-              "conda"
-          ]
-        },
+        "kernel": [
+          {
+            "kernel_spec": {
+              "language": "<regexp for matching kernel language>",
+              "display_name": "<regexp for matching kernel display name>"   // optional
+            },
+            "base": {
+              "name": "<the name of the kernel package>"
+            },
+            "overrides": {   // optional
+              "<manager name, e.g. 'pip'>": {
+                "name": "<name of kenrel package on pip, if it differs from base name>"
+              }
+            },
+            "managers": [   // list of package managers that have your kernel package
+                "pip",
+                "conda"
+            ]
+          }
+        ],
         "server": {
           "base": {
             "name": "<the name of the server extension package>"
@@ -76,7 +79,36 @@ jupyterlab-discovery by adding the following to your package.json::
     }
 
 
-Currently supported package managers are::
+A typical setup for e.g. a jupyter-widget based package will then be::
+
+    "keywords": [
+        "jupyterlab extension",
+        "jupyter",
+        "widgets",
+        "jupyterlab"
+    ],
+    "jupyterlab": {
+      "extension": true,
+      "discovery": {
+        "kernel": [
+          {
+            "kernel_spec": {
+              "language": "^python",
+            },
+            "base": {
+              "name": "myipywidgetspackage"
+            },
+            "managers": [
+                "pip",
+                "conda"
+            ]
+          }
+        ]
+      }
+    }
+
+
+Currently supported package managers are:
 
 - pip
 - conda

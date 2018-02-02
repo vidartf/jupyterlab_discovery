@@ -13,6 +13,10 @@ Next, install it with a develop install using pip::
 
     pip install -e .
 
+Enable the server extension with the `appropriate flag`_::
+
+    jupyter serverextension enable [--sys-prefix | --user | --system] jupyterlab_discovery
+
 Finally, install the labextension locally::
 
     jupyter labextension install .
@@ -24,3 +28,8 @@ output from ``npm run build`` in the extension directory). However, running
 the server in watch mode is not generally conductive to testing the operation
 of jupyterlab-discovery, as it prevents lab from checking for added extensions
 (at least at the time of writing).
+
+
+.. links
+
+.. _`appropriate flag`: https://jupyter-notebook.readthedocs.io/en/stable/extending/frontend_extensions.html#Installing-and-enabling-extensions

@@ -36,7 +36,7 @@ Searching
 
 You can search for extensions on the `NPM registry`_ by using the search bar
 on the top of the extension panel. Simply typing a space will allow you to
-see all extenions available.
+see all available extensions.
 
 .. figure:: images/search-blank.png
    :alt: An empty search (single space) will list all available extensions
@@ -72,7 +72,7 @@ Once you have found an extension you want to install, simply click its
 
 .. danger::
 
-    Installing an extension allows for arbitrary code execution on the
+    Installing an extension allows it to execute arbitrary code on the
     server, kernel, and in the client's browser. You should therefore
     avoid installing extensions you do not trust, and watch out for
     any extensions trying to mascerade as a trusted extension.
