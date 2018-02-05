@@ -104,7 +104,70 @@ When you are ready, reload the page (or open a new tab to the same server)
 to trigger a new build check.
 
 
+.. _companion-packages:
+
+Companion packages
+------------------
+
+During installation of an extension, Discovery will inspect the package
+metadata for any 
+:ref:`instructions on companion packages<ext-author-companion-packages>`.
+Companion packages can be:
+
+   - Notebook server extensions (or any other packages that need to be
+     installed on the Notebook server).
+   - Kernel packages. An example of companion packages for the
+     kenrel are Jupyter Widget packages, like the `ipywidgets`_
+     Python package for the
+     `@jupyter-widgets/jupyterlab-manager package`_.
+
+If Discovery finds instructions for companion packages, it will prompt
+you about what to do.
+
+.. figure:: images/companion-info.png
+   :alt: The companion package information dialog
+
+   Figure: The companion package information dialog.
+
+The available actions are:
+
+Install Extension Only:
+   Only install the JupyterLab extension, ignoring any companion
+   packages.
+
+Install Companions / Install in Kernel / Install Server Extension:
+   The text of this button depends on which companion package types
+   the metadata indicates are available. In all cases, it will show
+   another dialog asking for more input on what to install, and how.
+   After that, it will try to install the packages into the kernel
+   and/or Notebook server.
+
+Cancel:
+   Do nothing.
+
+
+.. figure:: images/companion-install.png
+   :alt: The companion package install dialog
+
+   Figure: The companion package install dialog. This example package
+   includes both an server extension and a kernel package for Python.
+   The drop-downs select how to install the packages. The available
+   options are an intersection between what Discovery supports and
+   what the package metadata indicates as valid options.
+
+.. warning::
+   The option to install companion packages is still experimental,
+   and while it works for the most common setups, it makes no
+   guarantees. Use at your own risk.
+
+
+
+
 
 .. links
 
 .. _`NPM registry`: https://docs.npmjs.com/misc/registry
+
+.. _`ipywidgets`: https://ipywidgets.readthedocs.io
+
+.. _`@jupyter-widgets/jupyterlab-manager package`: https://www.npmjs.com/package/@jupyter-widgets/jupyterlab-manager
