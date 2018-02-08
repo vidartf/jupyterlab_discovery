@@ -1,7 +1,7 @@
 Usage
 =====
 
-When starting JupyterLab, the extension will query the server for which
+When starting JupyterLab, the extension will query the server about which
 extensions are installed, and their status. Once this information has been
 obtained, the base view of the extension panel will look something like
 this:
@@ -62,7 +62,9 @@ Installing an extension
 -----------------------
 
 Once you have found an extension you want to install, simply click its
-'Install' button.
+'Install' button. This will install the latest version of the extension
+*that is compatible* with the current JupyterLab installation
+(note the distinction!).
 
 
 .. figure:: images/install-button.png
@@ -110,14 +112,14 @@ Companion packages
 ------------------
 
 During installation of an extension, Discovery will inspect the package
-metadata for any 
+metadata for any
 :ref:`instructions on companion packages<ext-author-companion-packages>`.
 Companion packages can be:
 
    - Notebook server extensions (or any other packages that need to be
      installed on the Notebook server).
    - Kernel packages. An example of companion packages for the
-     kenrel are Jupyter Widget packages, like the `ipywidgets`_
+     kernel are Jupyter Widget packages, like the `ipywidgets`_
      Python package for the
      `@jupyter-widgets/jupyterlab-manager package`_.
 
