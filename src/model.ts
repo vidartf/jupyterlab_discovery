@@ -20,7 +20,7 @@ import {
 
 import {
   presentCompanions
-} from './dialog';
+} from './companions';
 
 /**
  * Information about an extension
