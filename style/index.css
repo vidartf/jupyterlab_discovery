@@ -262,8 +262,8 @@
 */
 
 input[type=checkbox] {
-  appearance: checkbox;
-  -webkit-appearance: checkbox;
-  -moz-appearance: checkbox;
-  height: auto;
+    appearance: checkbox;
+    -webkit-appearance: checkbox;
+    -moz-appearance: checkbox;
+    height: auto;
 }

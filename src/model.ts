@@ -29,7 +29,6 @@ export
 interface IEntry {
   name: string;
   description: string;
-  python_package: string | null;
   installed: boolean;
   enabled: boolean;
   status: 'ok' | 'warning' | 'error' | 'deprecated' | null;
@@ -123,7 +122,6 @@ class ListModel extends VDomModel {
       entries[pkg.name] = {
         name: pkg.name,
         description: pkg.description,
-        python_package: null,
         installed: false,
         enabled: false,
         status: null,
@@ -147,7 +145,6 @@ class ListModel extends VDomModel {
         entries[pkg.name] = {
           name: pkg.name,
           description: pkg.description,
-          python_package: null,
           installed: pkg.installed !== false,
           enabled: pkg.enabled,
           status: pkg.status,
@@ -315,7 +312,7 @@ class ListModel extends VDomModel {
       if (shouldInstall) {
         return this._performAction('install', entry).then((data) => {
           this.update();
-        });;
+        });
       }
     })
   }
@@ -331,7 +328,7 @@ class ListModel extends VDomModel {
     }
     this._performAction('uninstall', entry).then((data) => {
       this.update();
-    });;
+    });
   }
 
   /**
@@ -345,7 +342,7 @@ class ListModel extends VDomModel {
     }
     this._performAction('enable', entry).then((data) => {
       this.update();
-    });;
+    });
   }
 
   /**
@@ -359,7 +356,7 @@ class ListModel extends VDomModel {
     }
     this._performAction('disable', entry).then((data) => {
       this.update();
-    });;
+    });
   }
 
   /**

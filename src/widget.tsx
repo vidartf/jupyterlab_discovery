@@ -123,9 +123,6 @@ namespace BuildPrompt {
 function ListEntry(props: ListEntry.IProperties): React.ReactElement<any> {
   const {entry} = props;
   const flagClasses = [];
-  if (entry.python_package) {
-    flagClasses.push('jp-discovery-entry-pure');
-  }
   if (entry.installed) {
     flagClasses.push('jp-discovery-entry-installed');
   }
