@@ -59,6 +59,13 @@ type KernelCompanion = {
 }
 
 
+export
+interface IActionReply {
+  status: 'ok' | 'warning' | 'error' | null;
+  message?: string;
+}
+
+
 /**
  * The server API path for querying/modifying installed extensions.
  */
@@ -284,7 +291,7 @@ class ListModel extends VDomModel {
    * @param action A valid action to perform.
    * @param entry The extension to perform the action on.
    */
-  protected _performAction(action: string, entry: IEntry): Promise<IInstalledEntry[]> {
+  protected _performAction(action: string, entry: IEntry): Promise<IActionReply> {
     const url = new URL(EXTENSION_API_PATH, this.serverConnectionSettings.baseUrl);
     let request: RequestInit = {
       method: 'POST',
@@ -295,7 +302,7 @@ class ListModel extends VDomModel {
     };
     return ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
       this.triggerBuildCheck();
-      return response.json() as Promise<IInstalledEntry[]>;
+      return response.json() as Promise<IActionReply>;
     });
   }
 
