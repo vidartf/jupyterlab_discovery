@@ -62,9 +62,7 @@ Installing an extension
 -----------------------
 
 Once you have found an extension you want to install, simply click its
-'Install' button. This will install the latest version of the extension
-*that is compatible* with the current JupyterLab installation
-(note the distinction!).
+'Install' button.
 
 
 .. figure:: images/install-button.png
