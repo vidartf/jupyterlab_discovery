@@ -22,6 +22,10 @@ import {
   presentCompanions
 } from './companions';
 
+import {
+  reportInstallError
+} from './dialog';
+
 /**
  * Information about an extension
  */
@@ -318,6 +322,9 @@ class ListModel extends VDomModel {
     this.checkCompanionPackages(entry).then((shouldInstall) => {
       if (shouldInstall) {
         return this._performAction('install', entry).then((data) => {
+          if (data.status !== 'ok') {
+            reportInstallError(entry.name, data.message);
+          }
           this.update();
         });
       }

@@ -126,7 +126,10 @@ class ExtensionManager(object):
     @run_on_executor
     def install(self, extension):
         """Handle an install/update request"""
-        install_extension(extension, app_dir=self.app_dir, logger=self.log)
+        try:
+            install_extension(extension, app_dir=self.app_dir, logger=self.log)
+        except ValueError as e:
+            raise gen.Return(dict(status='error', message=str(e)))
         raise gen.Return(dict(status='ok',))
 
     @run_on_executor

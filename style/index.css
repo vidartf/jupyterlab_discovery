@@ -267,3 +267,12 @@ input[type=checkbox] {
     -moz-appearance: checkbox;
     height: auto;
 }
+
+/*
+  Generic dialog
+*/
+.jp-discovery-dialog .jp-discovery-dialog-subheader {
+    font-size: var(--jp-ui-font-size1);
+    font-weight: 600;
+    color: var(--jp-ui-font-color0);
+}
