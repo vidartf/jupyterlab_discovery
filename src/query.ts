@@ -122,14 +122,14 @@ class Searcher {
   /**
    * Search for a jupyterlab extension.
    * 
-   * @param query The query to send. `keywords:"jupyterlab extension"` will be appended to the query.
+   * @param query The query to send. `keywords:"jupyterlab-extension"` will be appended to the query.
    * @param page The page of results to fetch.
    * @param pageination The pagination size to use. See registry API documentation for acceptable values.
    */
   searchExtensions(query: string, page=0, pageination=250): Promise<ISearchResult> {
     const uri = new URL('/-/v1/search', this.repoUri);
     // Note: Spaces are encoded to '+' signs!
-    let text = `${query} keywords:"jupyterlab extension"`
+    let text = `${query} keywords:"jupyterlab-extension"`
     uri.searchParams.append('text', text);
     uri.searchParams.append('size', pageination.toString());
     uri.searchParams.append('from', (pageination * page).toString());

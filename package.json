@@ -5,7 +5,8 @@
   "keywords": [
     "extension",
     "jupyter",
-    "jupyterlab"
+    "jupyterlab",
+    "jupyterlab-extension"
   ],
   "homepage": "https://github.com/vidartf/jupyterlab_discovery",
   "bugs": {

@@ -7,14 +7,14 @@ For Extension Authors
 
 If you have developed an extension for JupyterLab, please ensure that
 your extension is discoverable by jupyterlab-discovery by adding the
-following keyword to your package.json::
+`following keyword`_ to your package.json::
 
     "keywords": [
-        "jupyterlab extension",
+        "jupyterlab-extension",
         ... any other keywords you have
     ]
 
-that is, 'jupyterlab extension' as *one* keyword. This allows
+that is, 'jupyterlab-extension' as *one* keyword. This allows
 jupyterlab-discovery to make a clear distinction of actual extensions
 for jupyterlab.
 
@@ -82,7 +82,7 @@ The full options available are::
 A typical setup for e.g. a jupyter-widget based package will then be::
 
     "keywords": [
-        "jupyterlab extension",
+        "jupyterlab-extension",
         "jupyter",
         "widgets",
         "jupyterlab"
@@ -112,3 +112,8 @@ Currently supported package managers are:
 
 - pip
 - conda
+
+
+.. links
+
+.. _`following keyword`: https://github.com/jupyterlab/jupyterlab/issues/3841
