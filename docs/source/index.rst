@@ -32,7 +32,7 @@ e.g. from the JupyterLab `terminal`_::
     pip install jupyterlab-discovery
 
 This will install both the front-end extension, as well as the required server
-extension.
+extension. For torubleshooting and details, see the :ref:`Installation` section.
 
 
 Contents
@@ -42,6 +42,7 @@ Contents
    :maxdepth: 2
    :caption: Installation and usage
 
+   installation
    usage
 
 .. toctree::
