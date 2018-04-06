@@ -35,7 +35,7 @@ Companion Packages
 ------------------
 
 If your package depends on the presence of one or more packages in the
-kernel, or an a notebook server extension, you can indicate this to
+kernel, or a notebook server extension, you can indicate this to
 jupyterlab-discovery by adding metadata to your package.json file.
 The full options available are::
 
