@@ -21,6 +21,10 @@ For older versions of jupyter notebook, you will also need to run
 jupyter serverextension enable [--sys-prefix|--user|--system] jupyterlab_discovery
 ```
 
+## Documentation
+
+Visit http://jupyterlab-discovery.readthedocs.io/en/latest/# 
+
 ## Development
 
 For a development install (requires npm version 4 or later), do the following in the repository directory:
