@@ -52,7 +52,7 @@ The full options available are::
             },
             "overrides": {   // optional
               "<manager name, e.g. 'pip'>": {
-                "name": "<name of kenrel package on pip, if it differs from base name>"
+                "name": "<name of kernel package on pip, if it differs from base name>"
               }
             },
             "managers": [   // list of package managers that have your kernel package
