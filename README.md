@@ -1,6 +1,6 @@
 # jupyterlab_discovery
 
-[![Documentation Status](https://readthedocs.org/projects/jupyterlab-discovery/badge/?version=latest)](http://jupyterlab-discovery.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/jupyterlab-discovery/badge/?version=stable)](http://jupyterlab-discovery.readthedocs.io/en/stable/?badge=stable)
 
 A JupyterLab extension to facilitate the discovery and installation of other extensions
 
@@ -23,7 +23,7 @@ jupyter serverextension enable [--sys-prefix|--user|--system] jupyterlab_discove
 
 ## Documentation
 
-Visit http://jupyterlab-discovery.readthedocs.io/en/latest/# 
+Visit http://jupyterlab-discovery.readthedocs.io/
 
 ## Development
 
