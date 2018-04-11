@@ -32,9 +32,9 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.15.0",
-    "@jupyterlab/apputils": "^0.15.0",
-    "@jupyterlab/services": "^1.1.0",
+    "@jupyterlab/application": "^0.16.0",
+    "@jupyterlab/apputils": "^0.16.0",
+    "@jupyterlab/services": "^2.0.0",
     "react-paginate": "^5.0.0",
     "semver": "^5.5.0"
   },
@@ -43,7 +43,7 @@
     "@types/semver": "^5.4.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
-    "typescript": "~2.6.2"
+    "typescript": "~2.8.1"
   },
   "jupyterlab": {
     "extension": "lib/plugin"
