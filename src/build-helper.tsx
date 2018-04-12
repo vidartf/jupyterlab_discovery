@@ -9,9 +9,7 @@ import {
   BuildManager
 } from '@jupyterlab/services/lib/builder';
 
-import {
-  h
-} from '@phosphor/virtualdom';
+import * as React from 'react';
 
 
 /**
@@ -36,7 +34,7 @@ function doBuild(builder: BuildManager): Promise<void> {
     }).catch(err => {
       showDialog({
         title: 'Build Failed',
-        body: h.pre(err.message)
+        body: (<pre>{err.message}</pre>),
       });
     });
   }

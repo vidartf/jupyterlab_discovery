@@ -13,9 +13,7 @@ import {
   Kernel, ServiceManager, KernelMessage, TerminalSession
 } from '@jupyterlab/services';
 
-import {
-  h
-} from '@phosphor/virtualdom';
+import * as React from 'react';
 
 import {
   KernelCompanion
@@ -37,29 +35,41 @@ function presentCompanions(kernelCompanions: KernelCompanion[],
                            serviceManager: ServiceManager): Promise<boolean> {
   let entries = [];
   if (serverCompanion) {
-    entries.push(h.p(
-      'This package has indicated that it needs a corresponding server extension: ',
-      h.code(serverCompanion.base.name!),
-    ));
+    entries.push(
+      <p>
+      This package has indicated that it needs a corresponding server extension: 
+      <code>{serverCompanion.base.name!}</code>
+      </p>
+    );
   }
   if (kernelCompanions) {
     entries.push(
-      h.p('This package has indicated that it needs a corresponding package for the kernel.')
+      <p>This package has indicated that it needs a corresponding package for the kernel.</p>
     );
     for (let entry of kernelCompanions) {
-      entries.push(h.p('The package ', h.code(entry.kernelInfo.base.name!),
-                   ' is required by the following kernels:'));
+      entries.push(
+        <p>
+        The package
+        <code>{entry.kernelInfo.base.name!}</code>,
+         is required by the following kernels:
+        </p>
+      );
       let kernelEntries = [];
       for (let kernel of entry.kernels) {
-        kernelEntries.push(h.li(h.code(kernel.display_name)));
+        kernelEntries.push(
+          <li><code>{kernel.display_name}</code></li>);
       }
-      entries.push(h.ul(
-        ...kernelEntries
+      entries.push((
+        <ul>
+        {...kernelEntries}
+        </ul>
       ));
     }
   }
-  let body = h.div(
-    ...entries
+  let body = (
+    <div>
+    {...entries}
+    </div>
   );
   let prompt: string;
   if (kernelCompanions && serverCompanion) {
@@ -123,63 +133,69 @@ function promptInstallCompanions(kernelCompanions: KernelCompanion[],
     }
     for (let kernel of entry.kernels) {
       // For each entry, create a checkbox:
-      kernelEntries.push(h.label(
-        h.input({type: 'checkbox', value: kernel.name, onchange: () => {
-          // Have checkbox toggle modify config:
-          let selected = config[lookupName].selected;
-          if (kernel.name in selected) {
-            delete selected[kernel.name];
-          } else {
-            selected[kernel.name] = kernel;
-          }
-        }}),
-        kernel.display_name,
-        ),
-        h.br(),
+      kernelEntries.push(
+        (<label>
+          <input type="checkbox" value={kernel.name} onChange={() => {
+            // Have checkbox toggle modify config:
+            let selected = config[lookupName].selected;
+            if (kernel.name in selected) {
+              delete selected[kernel.name];
+            } else {
+              selected[kernel.name] = kernel;
+            }
+          }} />
+          {kernel.display_name}
+        </label>),
+        <br/>
       );
     }
     // Add select for picking which package panager to use
     let managerOptions = [];
     for (let m of entry.kernelInfo.managers || []) {
-      managerOptions.push(h.option({value: m}, m))
+      managerOptions.push(<option value={m}>{m}</option>);
     }
     entries.push(
-      h.div(
-        entry.kernelInfo.base.name!,
-        h.select({
-          onchange: (event) => {
+      <div>
+        {entry.kernelInfo.base.name!}
+        <select onChange={
+          (event) => {
             config[lookupName].manager = (event.target as HTMLSelectElement).value;
-          },
-        }, ...managerOptions),
-        ...kernelEntries
-    ));
+          }
+        }>
+        {...managerOptions}
+        </select>
+        {...kernelEntries}
+      </div>
+    );
   }
   let serverEntries = [];
   let serverManager = ''
   if (serverCompanion) {
-    // Add select for picking which package panager to use
+    // Add select for picking which package manager to use
     let managerOptions = [];
     serverManager = serverCompanion.managers[0] || '';
     for (let m of serverCompanion.managers || []) {
-      managerOptions.push(h.option({value: m}, m))
+      managerOptions.push(<option value={m}>{m}</option>);
     }
-    managerOptions.push(h.option({value: "-- Do nothing --"}));
-    serverEntries.push(h.p(
-      'Server extension install ',
-      h.code(serverCompanion.base.name!),
-      h.select(
-        {
-          onchange: (event) => {
+    managerOptions.push(<option value="-- Do nothing --"/>);
+    serverEntries.push(
+      <p>
+      Server extension install
+      <code>{serverCompanion.base.name!}</code>
+      <select onChange={(event) => {
             serverManager = (event.target as HTMLSelectElement).value;
-          },
-        },
-        ...managerOptions),
-    ));
+          }
+        }>
+        {...managerOptions}
+      </select>
+      </p>
+    );
   }
-  let body = h.div(
-    ...serverEntries,
-    h.p('Which kernel(s) do you want to install into?'),
-    ...entries
+  let body = (<div>
+    {...serverEntries}
+    <p>Which kernel(s) do you want to install into?</p>
+    {...entries}
+    </div>
   );
   let dialogPromise = showDialog({
     title: 'Install kernel companions',
