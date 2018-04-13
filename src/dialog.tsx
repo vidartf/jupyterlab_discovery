@@ -5,9 +5,7 @@ import {
   Dialog, showDialog
 } from '@jupyterlab/apputils';
 
-import {
-  h
-} from '@phosphor/virtualdom';
+import * as React from 'react';
 
 
 /**
@@ -19,20 +17,22 @@ import {
 export
 function reportInstallError(name: string, errorMessage?: string) {
   let entries = [];
-  entries.push(h.p(
-    'An error occurred installing ',
-    h.code(name),
-    '.',
-  ));
+  entries.push(<p>
+    An error occurred installing <code>{name}</code>.
+    </p>
+  );
   if (errorMessage) {
-    entries.push(h.p(
-      h.span({className: 'jp-discovery-dialog-subheader'}, 'Error message:'),
-      h.pre(errorMessage.trim()),
-    ));
+    entries.push(<p>
+      <span className="jp-discovery-dialog-subheader">
+        Error message:
+      </span>
+      <pre>{errorMessage.trim()}</pre>
+      </p>
+    );
   }
-  let body = h.div(
-    {className: 'jp-discovery-dialog'},
-    ...entries
+  let body = (<div className="jp-discovery-dialog">
+    {...entries}
+    </div>
   );
   showDialog({
     title: 'Extension Installation Error',
