@@ -27,6 +27,11 @@ from jupyterlab.commands import (
     _AppHandler
 )
 
+try:
+    from urllib.error import URLError
+except ImportError:
+    from urllib2 import URLError
+
 
 def _make_extension_entry(name, description, enabled, core, latest_version,
                           installed_version, status, installed=None):
@@ -92,8 +97,15 @@ class ExtensionManager(object):
         for name, data in info['extensions'].items():
             status = 'ok'
             pkg_info = yield self._get_pkg_info(name, data)
+            latest_version = pkg_info['wanted_version']
             if info['compat_errors'].get(name, None):
                 status = 'error'
+                # If errored, we cannot trust wanted_version
+                handler = _AppHandler(self.app_dir, self.log)
+                try:
+                    latest_version = handler._latest_compatible_package_version(name)
+                except URLError:
+                    pass
             else:
                 for packages in build_check_info.values():
                     if name in packages:
@@ -105,7 +117,7 @@ class ExtensionManager(object):
                 core=False,
                 # Use wanted version to ensure we limit ourselves
                 # within semver restrictions
-                latest_version=pkg_info['wanted_version'],
+                latest_version=latest_version,
                 installed_version=data['version'],
                 status=status,
             ))
@@ -156,8 +168,14 @@ class ExtensionManager(object):
         info = _read_package(data['path'])
         outdated = yield self._get_outdated()
         if outdated and name in outdated:
-            info['wanted_version'] = outdated[name]['wanted_version']
             info['latest_version'] = outdated[name]['latest_version']
+            # Ensure wanted version is compatible with current lab
+            handler = _AppHandler(self.app_dir, self.log)
+            try:
+                info['wanted_version'] = handler._latest_compatible_package_version(name)
+            except URLError:
+                # Fallback to using data from outdated
+                info['wanted_version'] = outdated[name]['wanted_version']
         else:
             info['wanted_version'] = info['version']
             info['latest_version'] = info['version']
