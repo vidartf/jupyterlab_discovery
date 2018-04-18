@@ -10,7 +10,7 @@ def load_jupyter_server_extension(nbapp):
     Args:
         nbapp (NotebookWebApplication): handle to the Notebook webserver instance.
     """
-    
+
     from notebook.utils import url_path_join
 
     from jupyterlab.commands import get_app_dir

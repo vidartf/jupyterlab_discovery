@@ -14,7 +14,7 @@ import * as React from 'react';
 
 /**
  * Instruct the server to perform a build
- * 
+ *
  * @param builder the build manager
  */
 export

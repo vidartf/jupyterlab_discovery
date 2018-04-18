@@ -386,7 +386,7 @@ class ExtensionView extends VDomRenderer<ListModel> {
     }
   }
 
-    /**
+  /**
    * Handle the DOM events for the command palette.
    *
    * @param event - The DOM event sent to the command palette.
