@@ -304,10 +304,32 @@ class ListModel extends VDomModel {
         extension_name: entry.name,
       }),
     };
-    return ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
+    const completed = ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
       this.triggerBuildCheck();
       return response.json() as Promise<IActionReply>;
     });
+    this._addPendingAction(completed);
+    return completed;
+  }
+
+  protected _addPendingAction(pending: Promise<any>): void {
+    // Add to pending actions collection
+    this._pendingActions.push(pending);
+
+    // Ensure action is removed when resolved
+    const remove = () => {
+      const i = this._pendingActions.indexOf(pending);
+      this._pendingActions.splice(i, 1);
+      this.stateChanged.emit(undefined);
+    }
+    pending.then(remove, remove);
+
+    // Signal changed state
+    this.stateChanged.emit(undefined);
+  }
+
+  hasPendingActions(): boolean {
+    return this._pendingActions.length > 0;
   }
 
   /**
@@ -317,7 +339,13 @@ class ListModel extends VDomModel {
    */
   install(entry: IEntry) {
     if (entry.installed) {
-      throw new Error(`Already installed: ${entry.name}`);
+      // Updating
+      return this._performAction('install', entry).then((data) => {
+        if (data.status !== 'ok') {
+          reportInstallError(entry.name, data.message);
+        }
+        this.update();
+      });
     }
     this.checkCompanionPackages(entry).then((shouldInstall) => {
       if (shouldInstall) {
@@ -405,7 +433,7 @@ class ListModel extends VDomModel {
   triggerBuildCheck(): void {
     let builder = this.serviceManager.builder;
     if (builder.isAvailable && !this.promptBuild) {
-      builder.getStatus().then(response => {
+      const completed = builder.getStatus().then(response => {
         if (response.status === 'building') {
           // Piggy-back onto existing build
           // TODO: Can this cause dialog collision on build completion?
@@ -419,6 +447,7 @@ class ListModel extends VDomModel {
           this.stateChanged.emit(undefined);
         }
       });
+      this._addPendingAction(completed);
     }
   }
 
@@ -430,7 +459,8 @@ class ListModel extends VDomModel {
       this.promptBuild = false;
       this.stateChanged.emit(undefined);
     }
-    doBuild(this.serviceManager.builder);
+    const completed = doBuild(this.serviceManager.builder);
+    this._addPendingAction(completed);
   }
 
   /**
@@ -470,6 +500,7 @@ class ListModel extends VDomModel {
 
   protected _installed: IEntry[];
   protected _searchResult: IEntry[];
+  protected _pendingActions: Promise<any>[] = [];
 
   /**
    * Settings for connecting to the notebook server.

@@ -304,6 +304,15 @@ class ExtensionView extends VDomRenderer<ListModel> {
         />
       );
     }
+    // Indicator element for pending actions:
+    elements.push(
+      <div
+        key='pending'
+        className={`jp-discovery-pending ${
+          model.hasPendingActions() ? 'jp-mod-hasPending' : ''
+        }`}
+      />
+    );
     const content = [];
     if (!model.initialized) {
       model.initialize();
