@@ -41,6 +41,13 @@
 }
 
 /*
+  Error messages
+*/
+.jp-discovery-view .jp-discovery-error pre {
+    white-space: pre-wrap;
+}
+
+/*
   Search bar layout and styling
 */
 
