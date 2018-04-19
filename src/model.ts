@@ -226,10 +226,17 @@ class ListModel extends VDomModel {
    */
   protected fetchInstalled(): Promise<IInstalledEntry[]> {
     const url = new URL(EXTENSION_API_PATH, this.serverConnectionSettings.baseUrl);
-    return ServerConnection.makeRequest(
+    const request = ServerConnection.makeRequest(
       url.toString(), {}, this.serverConnectionSettings).then((response) => {
+        handleError(response);
         return response.json() as Promise<IInstalledEntry[]>;
       });
+    request.then(() => {
+      this.serverConnectionError = null;
+    }, (reason) => {
+      this.serverConnectionError = reason.toString();
+    });
+    return request;
   }
 
   /**
@@ -259,12 +266,10 @@ class ListModel extends VDomModel {
     let searchMap;
     try {
       searchMap = await searchMapPromise;
-      this.offline = false;
-      this.errorMessage = undefined;
+      this.searchError = null;
     } catch (reason) {
       searchMap = {};
-      this.offline = true;
-      this.errorMessage = reason.toString();
+      this.searchError = reason.toString();
     }
     let installed: IEntry[] = [];
     for (let key of Object.keys(installedMap)) {
@@ -305,8 +310,14 @@ class ListModel extends VDomModel {
       }),
     };
     const completed = ServerConnection.makeRequest(url.toString(), request, this.serverConnectionSettings).then((response) => {
+      handleError(response);
       this.triggerBuildCheck();
       return response.json() as Promise<IActionReply>;
+    });
+    completed.then(() => {
+      this.serverConnectionError = null;
+    }, (reason) => {
+      this.serverConnectionError = reason.toString();
     });
     this._addPendingAction(completed);
     return completed;
@@ -472,16 +483,16 @@ class ListModel extends VDomModel {
       this.stateChanged.emit(undefined);
     }
   }
-
-  /**
-   * Set to true if an error occurs when trying to query the NPM repository.
-   */
-  offline: boolean | undefined;
-
+ 
   /**
    * Contains an error message if an error occurred when updating the model.
    */
-  errorMessage: string | undefined;
+  searchError: string | null = null;
+
+  /**
+   * Contains an error message if an error occurred when querying the server extension.
+   */
+  serverConnectionError: string | null = null;
 
   /**
    * Whether the model has finished async initialization.
@@ -550,4 +561,12 @@ function matchSpecs(kernelInfo: IKernelInstallInfo, specs: Kernel.ISpecModels | 
     }
   }
   return matches;
+}
+
+
+function handleError(response: Response): Response {
+  if (!response.ok) {
+    throw new Error(`${response.status} (${response.statusText})`);
+  }
+  return response;
 }

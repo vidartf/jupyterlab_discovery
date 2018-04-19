@@ -319,6 +319,23 @@ class ExtensionView extends VDomRenderer<ListModel> {
       content.push(
         <div  key='loading-placeholder' className="jp-discovery-loader">Updating extensions list</div>
       )
+    } else if (!model.query && model.serverConnectionError !== null) {
+      content.push(
+        <div key='error-msg' className="jp-discovery-error">
+          <p>
+            Error communicating with server extension. Consult
+            the <a href="https://jupyterlab-discovery.readthedocs.io/en/stable/installation.html">documentation</a> for
+            how to ensure that it is enabled.
+          </p>
+
+          <p>
+            Reason given:
+            <pre>
+              {model.serverConnectionError}
+            </pre>
+          </p>
+        </div>
+      )
     } else if (!model.query && model.installed.length) {
       content.push(
         <header key='installed-header'>Installed</header>,
@@ -330,7 +347,7 @@ class ExtensionView extends VDomRenderer<ListModel> {
           performAction={this.onAction.bind(this)}
           />,
       );
-    } else if (!model.offline) {
+    } else if (model.searchError === null) {
       content.push(
         <header key='installable-header'>Search results</header>,
         <ListView
@@ -344,7 +361,7 @@ class ExtensionView extends VDomRenderer<ListModel> {
     } else {
       content.push(
         <div key='error-msg' className="jp-discovery-error">
-          Error searching for extensions{model.errorMessage ?`: ${model.errorMessage}` : '.' }
+          Error searching for extensions{model.searchError ?`: ${model.searchError}` : '.' }
         </div>,
       );
     }
