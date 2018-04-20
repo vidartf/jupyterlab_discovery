@@ -15,6 +15,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
+from ipython_genutils.tempdir import TemporaryDirectory
 from notebook.base.handlers import APIHandler
 from tornado import gen, web
 from tornado.ioloop import IOLoop
@@ -24,7 +25,8 @@ from jupyterlab.jlpmapp import YARN_PATH, HERE as jlab_dir
 from jupyterlab.commands import (
     get_app_info, install_extension, uninstall_extension,
     enable_extension, disable_extension, _read_package,
-    _AppHandler
+    _AppHandler, _fetch_package_metadata, _semver_key,
+    _validate_compatibility
 )
 
 try:
@@ -101,15 +103,8 @@ class ExtensionManager(object):
         for name, data in info['extensions'].items():
             status = 'ok'
             pkg_info = yield self._get_pkg_info(name, data)
-            latest_version = pkg_info['wanted_version']
             if info['compat_errors'].get(name, None):
                 status = 'error'
-                # If errored, we cannot trust wanted_version
-                handler = _AppHandler(self.app_dir, self.log)
-                try:
-                    latest_version = handler._latest_compatible_package_version(name)
-                except URLError:
-                    pass
             else:
                 for packages in build_check_info.values():
                     if name in packages:
@@ -121,7 +116,7 @@ class ExtensionManager(object):
                 core=False,
                 # Use wanted version to ensure we limit ourselves
                 # within semver restrictions
-                latest_version=latest_version,
+                latest_version=pkg_info['latest_version'],
                 installed_version=data['version'],
                 status=status,
             ))
@@ -170,18 +165,13 @@ class ExtensionManager(object):
     def _get_pkg_info(self, name, data):
         """Get information about a package"""
         info = _read_package(data['path'])
+
+        # Get latest version that is compatible with current lab:
         outdated = yield self._get_outdated()
         if outdated and name in outdated:
             info['latest_version'] = outdated[name]['latest_version']
-            # Ensure wanted version is compatible with current lab
-            handler = _AppHandler(self.app_dir, self.log)
-            try:
-                info['wanted_version'] = handler._latest_compatible_package_version(name)
-            except URLError:
-                # Fallback to using data from outdated
-                info['wanted_version'] = outdated[name]['wanted_version']
         else:
-            info['wanted_version'] = info['version']
+            # Fallback to indicating that current is latest
             info['latest_version'] = info['version']
 
         raise gen.Return(info)
@@ -199,37 +189,61 @@ class ExtensionManager(object):
         # Return the Future
         return self._outdated
 
-
-    @run_on_executor
+    @gen.coroutine
     def _load_outdated(self):
-        """Load information from `npm/yarn outdated`"""
-        cache = {}
-        try:
-            # Note: We cannot use shell=True on Windows, as that will hang if
-            # the command times out (which will happen when offline)
-            output = check_output(['node', YARN_PATH, 'outdated', '--json'],
-                                  cwd=os.path.join(jlab_dir, 'staging'),
-                                  stderr=STDOUT,
-                                  timeout=10,
-                                 )
-        except CalledProcessError as e:
-            output = e.output
-        except TimeoutExpired as e:
-            self.log.error('"yarn outdated" timed out, could not fetch extension status')
-            return None
-        output = output.decode('utf-8')
-        outdated_data = json.loads('[%s]' % ','.join(output.splitlines()))
-        for de in outdated_data:
-            if de['type'] == 'table' and 'data' in de and 'body' in de['data']:
-                for entry in de['data']['body']:
-                    # name, current, wanted, latest, ...
-                    # wanted = latest that satisfy semver req
-                    if len(entry) >= 4:
-                        cache[entry[0]] = {
-                            'wanted_version': entry[2],
-                            'latest_version': entry[3],
-                        }
-        return cache
+        """Get the latest compatible version"""
+        info = get_app_info(app_dir=self.app_dir, logger=self.log)
+        data = yield self.executor.submit(
+            self._latest_compatible_package_versions,
+            tuple(info['extensions'].keys())
+        )
+        return data
+
+    def _latest_compatible_package_versions(self, names):
+        """Get the latest compatible version of a list of packages.
+
+        This is a variant of similar code in lab app, but optimized
+        for checking several packages in one go.
+        """
+        handler = _AppHandler(self.app_dir, self.log)
+        core_data = handler.info['core_data']
+
+        for name in names:
+            metadata = _fetch_package_metadata(handler.registry, name, self.log)
+            versions = metadata.get('versions', [])
+
+            # Sort pre-release first, as we will reverse the sort:
+            def sort_key(key_value):
+                return _semver_key(key_value[0], prerelease_first=True)
+
+            keys = []
+            for version, data in sorted(versions.items(),
+                                        key=sort_key,
+                                        reverse=True):
+                deps = data.get('dependencies', {})
+                errors = _validate_compatibility(name, deps, core_data)
+                if not errors:
+                    # Found a compatible version
+                    keys.append('%s@%s' % (name, version))
+
+        versions = {}
+        with TemporaryDirectory() as tempdir:
+            ret = handler._run([which('npm'), 'pack', ' '.join(keys)], cwd=tempdir)
+            if ret != 0:
+                msg = '"%s" is not a valid npm package'
+                raise ValueError(msg % keys)
+
+            for key in keys:
+                fname = key.replace('@', '-').replace('/', '-') + '.tgz'
+                info = _read_package(os.path.join(tempdir, fname))
+                # Verify that the version is a valid extension.
+                if _validate_extension(info['data']):
+                    # Invalid, do not consider other versions
+                    continue
+                # Valid
+                versions[key] = info
+        return versions
+
 
     @run_on_executor
     def _get_scheduled_uninstall_info(self, name):
