@@ -163,6 +163,12 @@
     border-bottom: solid var(--jp-border-width) var(--jp-border-color2);
 }
 
+/* Precedence order update/error/warning matters! */
+.jp-discovery-entry.jp-discovery-entry-update {
+    border-left: solid 8px var(--jp-brand-color2);
+    padding-left: 4px;
+}
+
 .jp-discovery-entry.jp-discovery-entry-error {
     border-left: solid 8px var(--jp-error-color2);
     padding-left: 4px;
@@ -271,7 +277,7 @@
 }
 
 .jp-discovery-entry button.jp-discovery-update:hover {
-    background-color: var(--jp-success-color3);
+    background-color: var(--jp-brand-color3);
 }
 
 
