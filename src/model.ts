@@ -224,8 +224,11 @@ class ListModel extends VDomModel {
   /**
    * Make a request to the server for info about its installed extensions.
    */
-  protected fetchInstalled(): Promise<IInstalledEntry[]> {
+  protected fetchInstalled(refreshInstalled=false): Promise<IInstalledEntry[]> {
     const url = new URL(EXTENSION_API_PATH, this.serverConnectionSettings.baseUrl);
+    if (refreshInstalled) {
+      url.searchParams.append('refresh', '1');
+    }
     const request = ServerConnection.makeRequest(
       url.toString(), {}, this.serverConnectionSettings).then((response) => {
         handleError(response);
@@ -259,10 +262,10 @@ class ListModel extends VDomModel {
    *
    * Emits the `stateChanged` signal on succesfull completion.
    */
-  protected async update() {
+  protected async update(refreshInstalled=false) {
     let search = this.searcher.searchExtensions(this.query, this.page, this.pagination);
     let searchMapPromise = this.translateSearchResult(search);
-    let installedMap = await this.translateInstalled(this.fetchInstalled());
+    let installedMap = await this.translateInstalled(this.fetchInstalled(refreshInstalled));
     let searchMap;
     try {
       searchMap = await searchMapPromise;
@@ -483,7 +486,15 @@ class ListModel extends VDomModel {
       this.stateChanged.emit(undefined);
     }
   }
- 
+
+  /**
+   * Ignore a build recommendation
+   */
+  refreshInstalled(): void {
+    const refresh = this.update(true);
+    this._addPendingAction(refresh);
+  }
+
   /**
    * Contains an error message if an error occurred when updating the model.
    */

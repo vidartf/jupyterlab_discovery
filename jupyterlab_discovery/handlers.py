@@ -86,6 +86,10 @@ class ExtensionManager(object):
         # Start fetching data on outdated extensions immediately
         IOLoop.current().spawn_callback(self._get_outdated)
 
+    def refresh_outdated(self):
+        self._outdated = self._load_outdated()
+        return self._outdated
+
     @gen.coroutine
     def list_extensions(self):
         """Handle a request for all installed extensions"""
@@ -248,6 +252,8 @@ class ExtensionHandler(APIHandler):
     @gen.coroutine
     def get(self):
         """GET query returns info on all installed extensions"""
+        if self.get_argument('refresh', False) == '1':
+            yield self.manager.refresh_outdated()
         extensions = yield self.manager.list_extensions()
         self.finish(json.dumps(extensions))
 

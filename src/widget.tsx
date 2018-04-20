@@ -338,7 +338,9 @@ class ExtensionView extends VDomRenderer<ListModel> {
       )
     } else if (!model.query && model.installed.length) {
       content.push(
-        <header key='installed-header'>Installed</header>,
+        <header key='installed-header'>Installed<button
+          className="jp-discovery-refresh"
+          onClick={() => { model.refreshInstalled(); }}>&#8635;</button></header>,
         <ListView
           key='installed'
           entries={model.installed}
