@@ -3,7 +3,7 @@
 This project is licensed under the terms of the Modified BSD License
 (also known as New or Revised or 3-Clause BSD), as follows:
 
-- Copyright (c) 2017-, Simula Research
+- Copyright (c) 2017-, Simula Research Laboratory
 
 All rights reserved.
 
