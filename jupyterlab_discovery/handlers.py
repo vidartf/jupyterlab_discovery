@@ -21,12 +21,12 @@ from tornado import gen, web
 from tornado.ioloop import IOLoop
 from tornado.concurrent import run_on_executor
 
-from jupyterlab.jlpmapp import YARN_PATH, HERE as jlab_dir
+from jupyterlab.jlpmapp import which, YARN_PATH, HERE as jlab_dir
 from jupyterlab.commands import (
     get_app_info, install_extension, uninstall_extension,
     enable_extension, disable_extension, _read_package,
     _AppHandler, _fetch_package_metadata, _semver_key,
-    _validate_compatibility
+    _validate_compatibility, _validate_extension
 )
 
 try:
@@ -87,10 +87,6 @@ class ExtensionManager(object):
         self._outdated = None
         # Start fetching data on outdated extensions immediately
         IOLoop.current().spawn_callback(self._get_outdated)
-
-    def refresh_outdated(self):
-        self._outdated = self._load_outdated()
-        return self._outdated
 
     @gen.coroutine
     def list_extensions(self):
@@ -169,7 +165,7 @@ class ExtensionManager(object):
         # Get latest version that is compatible with current lab:
         outdated = yield self._get_outdated()
         if outdated and name in outdated:
-            info['latest_version'] = outdated[name]['latest_version']
+            info['latest_version'] = outdated[name]
         else:
             # Fallback to indicating that current is latest
             info['latest_version'] = info['version']
@@ -187,6 +183,10 @@ class ExtensionManager(object):
         if self._outdated is None:
             self._outdated = self._load_outdated()
         # Return the Future
+        return self._outdated
+
+    def refresh_outdated(self):
+        self._outdated = self._load_outdated()
         return self._outdated
 
     @gen.coroutine
@@ -208,6 +208,7 @@ class ExtensionManager(object):
         handler = _AppHandler(self.app_dir, self.log)
         core_data = handler.info['core_data']
 
+        keys = []
         for name in names:
             metadata = _fetch_package_metadata(handler.registry, name, self.log)
             versions = metadata.get('versions', [])
@@ -216,7 +217,6 @@ class ExtensionManager(object):
             def sort_key(key_value):
                 return _semver_key(key_value[0], prerelease_first=True)
 
-            keys = []
             for version, data in sorted(versions.items(),
                                         key=sort_key,
                                         reverse=True):
@@ -225,23 +225,22 @@ class ExtensionManager(object):
                 if not errors:
                     # Found a compatible version
                     keys.append('%s@%s' % (name, version))
+                    break  # break inner for
 
         versions = {}
         with TemporaryDirectory() as tempdir:
-            ret = handler._run([which('npm'), 'pack', ' '.join(keys)], cwd=tempdir)
+            ret = handler._run([which('npm'), 'pack'] + keys, cwd=tempdir, quiet=True)
             if ret != 0:
                 msg = '"%s" is not a valid npm package'
                 raise ValueError(msg % keys)
 
             for key in keys:
-                fname = key.replace('@', '-').replace('/', '-') + '.tgz'
-                info = _read_package(os.path.join(tempdir, fname))
+                fname = key[0].replace('@', '') + key[1:].replace('@', '-').replace('/', '-') + '.tgz'
+                data = _read_package(os.path.join(tempdir, fname))
                 # Verify that the version is a valid extension.
-                if _validate_extension(info['data']):
-                    # Invalid, do not consider other versions
-                    continue
-                # Valid
-                versions[key] = info
+                if not _validate_extension(data):
+                    # Valid
+                    versions[key] = data['version']
         return versions
 
 
