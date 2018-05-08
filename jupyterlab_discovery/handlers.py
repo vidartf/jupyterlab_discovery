@@ -227,7 +227,10 @@ class ExtensionManager(object):
                     keys.append('%s@%s' % (name, version))
                     break  # break inner for
 
+
         versions = {}
+        if not keys:
+            return versions
         with TemporaryDirectory() as tempdir:
             ret = handler._run([which('npm'), 'pack'] + keys, cwd=tempdir, quiet=True)
             if ret != 0:
