@@ -18,8 +18,8 @@
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "lib/plugin.js",
+  "types": "lib/plugin.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/vidartf/jupyterlab_discovery.git"
