@@ -210,7 +210,10 @@ class ExtensionManager(object):
 
         keys = []
         for name in names:
-            metadata = _fetch_package_metadata(handler.registry, name, self.log)
+            try:
+                metadata = _fetch_package_metadata(handler.registry, name, self.log)
+            except URLError:
+                continue
             versions = metadata.get('versions', [])
 
             # Sort pre-release first, as we will reverse the sort:
