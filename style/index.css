@@ -132,6 +132,7 @@
 .jp-discovery-view header button.jp-discovery-refresh {
     border: 1px solid transparent;
     background-color: var(--jp-layout-color1);
+    color: var(--jp-ui-font-color1);
 }
 
 .jp-discovery-view header button.jp-discovery-refresh:hover {
