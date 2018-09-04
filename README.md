@@ -2,7 +2,16 @@
 
 [![Documentation Status](https://readthedocs.org/projects/jupyterlab-discovery/badge/?version=stable)](http://jupyterlab-discovery.readthedocs.io/en/stable/?badge=stable)
 
-A JupyterLab extension to facilitate the discovery and installation of other extensions
+A JupyterLab extension to facilitate the discovery and installation of other extensions.
+
+
+Note: This extension has now been included in the core of JupyterLab! To enable it:
+- Go into advanced settings editor.
+- Open the Extension Manager section.
+- Add the entry `"enabled": true`.
+- Save the settings.
+- If prompted whether you are sure, read the warning, and click "Enable" if you're still sure ;)
+
 
 
 ## Prerequisites
