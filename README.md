@@ -5,7 +5,8 @@
 A JupyterLab extension to facilitate the discovery and installation of other extensions.
 
 
-Note: This extension has now been included in the core of JupyterLab! To enable it:
+***Note: This extension has now been included in the core of JupyterLab!***
+It has been included as the [extension manager]. To enable it:
 - Go into advanced settings editor.
 - Open the Extension Manager section.
 - Add the entry `"enabled": true`.
