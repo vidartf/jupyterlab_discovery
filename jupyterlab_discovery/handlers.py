@@ -24,7 +24,7 @@ from tornado.concurrent import run_on_executor
 from jupyterlab.jlpmapp import which, YARN_PATH, HERE as jlab_dir
 from jupyterlab.commands import (
     get_app_info, install_extension, uninstall_extension,
-    enable_extension, disable_extension, _read_package,
+    enable_extension, disable_extension, read_package,
     _AppHandler, _fetch_package_metadata, _semver_key,
     _validate_compatibility, _validate_extension
 )
@@ -160,7 +160,7 @@ class ExtensionManager(object):
     @gen.coroutine
     def _get_pkg_info(self, name, data):
         """Get information about a package"""
-        info = _read_package(data['path'])
+        info = read_package(data['path'])
 
         # Get latest version that is compatible with current lab:
         outdated = yield self._get_outdated()
@@ -242,7 +242,7 @@ class ExtensionManager(object):
 
             for key in keys:
                 fname = key[0].replace('@', '') + key[1:].replace('@', '-').replace('/', '-') + '.tgz'
-                data = _read_package(os.path.join(tempdir, fname))
+                data = read_package(os.path.join(tempdir, fname))
                 # Verify that the version is a valid extension.
                 if not _validate_extension(data):
                     # Valid
